@@ -41,7 +41,7 @@ if (localStorage.getItem(UNLOCK_KEY) === "1") {
 function loadInitial() {
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
-    songs = JSON.parse(saved);
+    songs = JSON.parse(saved).map(normalizeSong);
     render();
   } else {
     loadFromFile();
@@ -49,10 +49,10 @@ function loadInitial() {
 }
 
 function loadFromFile() {
-  fetch("songs.json")
+  fetch(`songs.json?t=${Date.now()}`, { cache: "no-store" })
     .then((res) => res.json())
     .then((data) => {
-      songs = data;
+      songs = data.map(normalizeSong);
       save();
       render();
     })
@@ -75,6 +75,50 @@ function setStatus(text, type = "") {
 
 function nextId() {
   return songs.reduce((max, s) => Math.max(max, s.id), 0) + 1;
+}
+
+function normalizeSong(song) {
+  if (!song.tags) {
+    song.tags = song.tag ? [song.tag] : [];
+  }
+  delete song.tag;
+  return song;
+}
+
+const TAG_OPTIONS = ["한식", "일식", "양식", "완숙", "반숙", "관상용", "연습대기중", "잠금", "친구필요"];
+
+function createTagSelector(initialTags, onChange) {
+  let selected = new Set(initialTags || []);
+  const el = document.createElement("div");
+  el.className = "tag-selector";
+
+  for (const tag of TAG_OPTIONS) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "tag-chip" + (selected.has(tag) ? " active" : "");
+    btn.textContent = tag;
+    btn.addEventListener("click", () => {
+      if (selected.has(tag)) {
+        selected.delete(tag);
+      } else {
+        selected.add(tag);
+      }
+      btn.classList.toggle("active");
+      if (onChange) onChange(Array.from(selected));
+    });
+    el.appendChild(btn);
+  }
+
+  return {
+    el,
+    getValue: () => Array.from(selected),
+    setValue: (tags) => {
+      selected = new Set(tags || []);
+      el.querySelectorAll(".tag-chip").forEach((btn) => {
+        btn.classList.toggle("active", selected.has(btn.textContent));
+      });
+    },
+  };
 }
 
 function createStarInput(initialValue, onChange) {
@@ -110,6 +154,9 @@ function createStarInput(initialValue, onChange) {
 const newDiffWidget = createStarInput(3, null);
 document.getElementById("new-diff").appendChild(newDiffWidget.el);
 
+const newTagsWidget = createTagSelector([], null);
+document.getElementById("new-tags").appendChild(newTagsWidget.el);
+
 function render() {
   const query = searchEl.value.trim().toLowerCase();
   const visible = query
@@ -123,18 +170,18 @@ function render() {
     const row = document.createElement("div");
     row.className = "admin-row";
     row.innerHTML = `
-      <input type="text" class="f-title" value="">
-      <input type="text" class="f-artist" value="">
-      <input type="text" class="f-tag" value="" placeholder="태그">
-      <div class="f-diff"></div>
-      <button class="danger">삭제</button>
+      <div class="admin-row-main">
+        <input type="text" class="f-title" value="">
+        <input type="text" class="f-artist" value="">
+        <div class="f-diff"></div>
+        <button class="danger">삭제</button>
+      </div>
+      <div class="f-tags"></div>
     `;
     const titleInput = row.querySelector(".f-title");
     const artistInput = row.querySelector(".f-artist");
-    const tagInput = row.querySelector(".f-tag");
     titleInput.value = song.title;
     artistInput.value = song.artist;
-    tagInput.value = song.tag || "";
 
     const diffWidget = createStarInput(song.difficulty || 0, (v) => {
       song.difficulty = v;
@@ -142,16 +189,18 @@ function render() {
     });
     row.querySelector(".f-diff").appendChild(diffWidget.el);
 
+    const tagWidget = createTagSelector(song.tags, (tags) => {
+      song.tags = tags;
+      save();
+    });
+    row.querySelector(".f-tags").appendChild(tagWidget.el);
+
     titleInput.addEventListener("input", () => {
       song.title = titleInput.value;
       save();
     });
     artistInput.addEventListener("input", () => {
       song.artist = artistInput.value;
-      save();
-    });
-    tagInput.addEventListener("input", () => {
-      song.tag = tagInput.value;
       save();
     });
     row.querySelector(".danger").addEventListener("click", () => {
@@ -170,7 +219,6 @@ searchEl.addEventListener("input", render);
 function addSong() {
   const titleEl = document.getElementById("new-title");
   const artistEl = document.getElementById("new-artist");
-  const tagEl = document.getElementById("new-tag");
 
   const title = titleEl.value.trim();
   const artist = artistEl.value.trim();
@@ -183,7 +231,7 @@ function addSong() {
     id: nextId(),
     title,
     artist,
-    tag: tagEl.value.trim(),
+    tags: newTagsWidget.getValue(),
     difficulty: newDiffWidget.getValue(),
   });
   save();
@@ -191,13 +239,13 @@ function addSong() {
 
   titleEl.value = "";
   artistEl.value = "";
-  tagEl.value = "";
   newDiffWidget.setValue(3);
+  newTagsWidget.setValue([]);
   titleEl.focus();
 }
 
 document.getElementById("add-btn").addEventListener("click", addSong);
-for (const id of ["new-title", "new-artist", "new-tag"]) {
+for (const id of ["new-title", "new-artist"]) {
   document.getElementById(id).addEventListener("keydown", (e) => {
     if (e.key === "Enter") addSong();
   });
@@ -231,7 +279,7 @@ importFileEl.addEventListener("change", () => {
     try {
       const data = JSON.parse(reader.result);
       if (!Array.isArray(data)) throw new Error("not an array");
-      songs = data;
+      songs = data.map(normalizeSong);
       save();
       render();
     } catch {
@@ -260,7 +308,7 @@ excelFileEl.addEventListener("change", async () => {
         const artist = String(rows[i][2] || "").trim();
         const title = String(rows[i][3] || "").trim();
         if (!artist || !title) continue;
-        songs.push({ id: nextId(), title, artist, tag: sheetName, difficulty: 0 });
+        songs.push({ id: nextId(), title, artist, tags: [sheetName], difficulty: 0 });
         added++;
       }
     }

@@ -137,8 +137,10 @@ function createTagSelector(initialTags, onChange) {
       updateTrigger();
       if (onChange) onChange(Array.from(selected));
     });
+    const label = document.createElement("span");
+    label.textContent = tag;
     option.appendChild(checkbox);
-    option.appendChild(document.createTextNode(tag));
+    option.appendChild(label);
     dropdown.appendChild(option);
   }
 

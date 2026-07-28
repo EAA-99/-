@@ -2,6 +2,7 @@ const ADMIN_PASSWORD = "DDARIN"; // 배포 전에 꼭 바꾸세요. 브라우저
 const STORAGE_KEY = "songbook_draft";
 const UNLOCK_KEY = "songbook_unlocked";
 const GITHUB_CFG_KEY = "songbook_github_cfg";
+const TAG_OPTIONS = ["한식", "일식", "양식", "완숙", "반숙", "관상용", "연습대기중", "잠금", "친구필요"];
 
 const gateView = document.getElementById("gate-view");
 const adminView = document.getElementById("admin-view");
@@ -92,8 +93,6 @@ function normalizeSong(song) {
   delete song.tag;
   return song;
 }
-
-const TAG_OPTIONS = ["한식", "일식", "양식", "완숙", "반숙", "관상용", "연습대기중", "잠금", "친구필요"];
 
 function closeAllTagDropdowns(except) {
   document.querySelectorAll(".tag-dropdown").forEach((d) => {

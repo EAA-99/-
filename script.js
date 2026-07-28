@@ -4,6 +4,11 @@ const countEl = document.getElementById("count");
 
 let songs = [];
 
+function starsHtml(value) {
+  const pct = Math.max(0, Math.min(5, value)) / 5 * 100;
+  return `<span class="stars"><span class="stars-bg">★★★★★</span><span class="stars-fill" style="width:${pct}%">★★★★★</span></span>`;
+}
+
 function render(items) {
   listEl.innerHTML = "";
 
@@ -18,7 +23,10 @@ function render(items) {
           <div class="song-title"></div>
           <div class="song-artist"></div>
         </div>
-        ${song.tag ? `<span class="song-tag"></span>` : ""}
+        <div class="song-side">
+          ${song.difficulty ? starsHtml(song.difficulty) : ""}
+          ${song.tag ? `<span class="song-tag"></span>` : ""}
+        </div>
       `;
       li.querySelector(".song-title").textContent = song.title;
       li.querySelector(".song-artist").textContent = song.artist;

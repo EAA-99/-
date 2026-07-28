@@ -77,6 +77,39 @@ function nextId() {
   return songs.reduce((max, s) => Math.max(max, s.id), 0) + 1;
 }
 
+function createStarInput(initialValue, onChange) {
+  let value = initialValue;
+  const el = document.createElement("div");
+  el.className = "star-input stars";
+  el.innerHTML = `<span class="stars-bg">★★★★★</span><span class="stars-fill">★★★★★</span>`;
+  const fill = el.querySelector(".stars-fill");
+
+  function paint() {
+    fill.style.width = `${(value / 5) * 100}%`;
+  }
+  paint();
+
+  el.addEventListener("click", (e) => {
+    const rect = el.getBoundingClientRect();
+    const fraction = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    value = Math.round(fraction * 10) / 2;
+    paint();
+    if (onChange) onChange(value);
+  });
+
+  return {
+    el,
+    getValue: () => value,
+    setValue: (v) => {
+      value = v;
+      paint();
+    },
+  };
+}
+
+const newDiffWidget = createStarInput(3, null);
+document.getElementById("new-diff").appendChild(newDiffWidget.el);
+
 function render() {
   const query = searchEl.value.trim().toLowerCase();
   const visible = query
@@ -93,6 +126,7 @@ function render() {
       <input type="text" class="f-title" value="">
       <input type="text" class="f-artist" value="">
       <input type="text" class="f-tag" value="" placeholder="태그">
+      <div class="f-diff"></div>
       <button class="danger">삭제</button>
     `;
     const titleInput = row.querySelector(".f-title");
@@ -101,6 +135,12 @@ function render() {
     titleInput.value = song.title;
     artistInput.value = song.artist;
     tagInput.value = song.tag || "";
+
+    const diffWidget = createStarInput(song.difficulty || 0, (v) => {
+      song.difficulty = v;
+      save();
+    });
+    row.querySelector(".f-diff").appendChild(diffWidget.el);
 
     titleInput.addEventListener("input", () => {
       song.title = titleInput.value;
@@ -139,13 +179,20 @@ function addSong() {
     return;
   }
 
-  songs.push({ id: nextId(), title, artist, tag: tagEl.value.trim() });
+  songs.push({
+    id: nextId(),
+    title,
+    artist,
+    tag: tagEl.value.trim(),
+    difficulty: newDiffWidget.getValue(),
+  });
   save();
   render();
 
   titleEl.value = "";
   artistEl.value = "";
   tagEl.value = "";
+  newDiffWidget.setValue(3);
   titleEl.focus();
 }
 

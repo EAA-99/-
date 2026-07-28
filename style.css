@@ -301,8 +301,7 @@ button.danger {
 }
 
 .tag-option span {
-  overflow: hidden;
-  text-overflow: ellipsis;
+  flex-shrink: 0;
   white-space: nowrap;
 }
 

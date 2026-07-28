@@ -34,18 +34,26 @@ passwordEl.addEventListener("keydown", (e) => {
   if (e.key === "Enter") document.getElementById("unlock-btn").click();
 });
 
-if (localStorage.getItem(UNLOCK_KEY) === "1") {
-  unlock();
+try {
+  if (localStorage.getItem(UNLOCK_KEY) === "1") {
+    unlock();
+  }
+} catch (e) {
+  console.error("자동 로그인 중 오류:", e);
 }
 
 function loadInitial() {
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
-    songs = JSON.parse(saved).map(normalizeSong);
-    render();
-  } else {
-    loadFromFile();
+    try {
+      songs = JSON.parse(saved).map(normalizeSong);
+      render();
+      return;
+    } catch (e) {
+      console.error("저장된 편집 내용을 읽지 못해 songs.json에서 다시 불러옵니다:", e);
+    }
   }
+  loadFromFile();
 }
 
 function loadFromFile() {
@@ -87,36 +95,72 @@ function normalizeSong(song) {
 
 const TAG_OPTIONS = ["한식", "일식", "양식", "완숙", "반숙", "관상용", "연습대기중", "잠금", "친구필요"];
 
+function closeAllTagDropdowns(except) {
+  document.querySelectorAll(".tag-dropdown").forEach((d) => {
+    if (d !== except) d.hidden = true;
+  });
+}
+
+document.addEventListener("click", (e) => {
+  if (!e.target.closest(".tag-select")) closeAllTagDropdowns();
+});
+
 function createTagSelector(initialTags, onChange) {
   let selected = new Set(initialTags || []);
-  const el = document.createElement("div");
-  el.className = "tag-selector";
+  const wrap = document.createElement("div");
+  wrap.className = "tag-select";
 
-  for (const tag of TAG_OPTIONS) {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "tag-chip" + (selected.has(tag) ? " active" : "");
-    btn.textContent = tag;
-    btn.addEventListener("click", () => {
-      if (selected.has(tag)) {
-        selected.delete(tag);
-      } else {
-        selected.add(tag);
-      }
-      btn.classList.toggle("active");
-      if (onChange) onChange(Array.from(selected));
-    });
-    el.appendChild(btn);
+  const trigger = document.createElement("button");
+  trigger.type = "button";
+  trigger.className = "tag-select-trigger";
+  wrap.appendChild(trigger);
+
+  const dropdown = document.createElement("div");
+  dropdown.className = "tag-dropdown";
+  dropdown.hidden = true;
+  wrap.appendChild(dropdown);
+
+  function updateTrigger() {
+    const list = Array.from(selected);
+    trigger.textContent = list.length ? list.join(", ") : "태그 선택";
+    trigger.classList.toggle("has-tags", list.length > 0);
   }
 
+  for (const tag of TAG_OPTIONS) {
+    const option = document.createElement("label");
+    option.className = "tag-option";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = selected.has(tag);
+    checkbox.addEventListener("change", () => {
+      if (checkbox.checked) selected.add(tag);
+      else selected.delete(tag);
+      updateTrigger();
+      if (onChange) onChange(Array.from(selected));
+    });
+    option.appendChild(checkbox);
+    option.appendChild(document.createTextNode(tag));
+    dropdown.appendChild(option);
+  }
+
+  trigger.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const willOpen = dropdown.hidden;
+    closeAllTagDropdowns();
+    dropdown.hidden = !willOpen;
+  });
+
+  updateTrigger();
+
   return {
-    el,
+    el: wrap,
     getValue: () => Array.from(selected),
     setValue: (tags) => {
       selected = new Set(tags || []);
-      el.querySelectorAll(".tag-chip").forEach((btn) => {
-        btn.classList.toggle("active", selected.has(btn.textContent));
+      dropdown.querySelectorAll("input[type=checkbox]").forEach((checkbox, i) => {
+        checkbox.checked = selected.has(TAG_OPTIONS[i]);
       });
+      updateTrigger();
     },
   };
 }
@@ -170,13 +214,11 @@ function render() {
     const row = document.createElement("div");
     row.className = "admin-row";
     row.innerHTML = `
-      <div class="admin-row-main">
-        <input type="text" class="f-title" value="">
-        <input type="text" class="f-artist" value="">
-        <div class="f-diff"></div>
-        <button class="danger">삭제</button>
-      </div>
+      <input type="text" class="f-title" value="">
+      <input type="text" class="f-artist" value="">
+      <div class="f-diff"></div>
       <div class="f-tags"></div>
+      <button class="danger">삭제</button>
     `;
     const titleInput = row.querySelector(".f-title");
     const artistInput = row.querySelector(".f-artist");

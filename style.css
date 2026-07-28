@@ -277,7 +277,7 @@ button.danger {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 160px;
+  width: max-content;
   padding: 8px;
   background: var(--surface-hover);
   border: 1px solid var(--border);
@@ -296,7 +296,12 @@ button.danger {
   padding: 4px 6px;
   border-radius: 6px;
   font-size: 0.85rem;
+  white-space: nowrap;
   cursor: pointer;
+}
+
+.tag-option input[type="checkbox"] {
+  flex-shrink: 0;
 }
 
 .tag-option:hover {

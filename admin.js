@@ -242,6 +242,38 @@ importFileEl.addEventListener("change", () => {
   importFileEl.value = "";
 });
 
+const excelFileEl = document.getElementById("excel-import-file");
+document.getElementById("excel-import-btn").addEventListener("click", () => {
+  excelFileEl.click();
+});
+excelFileEl.addEventListener("change", async () => {
+  const file = excelFileEl.files[0];
+  if (!file) return;
+  try {
+    const buffer = await file.arrayBuffer();
+    const workbook = XLSX.read(buffer, { type: "array" });
+    let added = 0;
+
+    for (const sheetName of workbook.SheetNames) {
+      const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
+      for (let i = 1; i < rows.length; i++) {
+        const artist = String(rows[i][2] || "").trim();
+        const title = String(rows[i][3] || "").trim();
+        if (!artist || !title) continue;
+        songs.push({ id: nextId(), title, artist, tag: sheetName, difficulty: 0 });
+        added++;
+      }
+    }
+
+    save();
+    render();
+    setStatus(`엑셀에서 ${added}곡을 추가했습니다.`, "success");
+  } catch (err) {
+    setStatus(`엑셀 파일을 읽지 못했습니다: ${err.message}`, "error");
+  }
+  excelFileEl.value = "";
+});
+
 // --- GitHub 연동 ---
 
 function getGithubConfig() {

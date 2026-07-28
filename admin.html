@@ -34,10 +34,12 @@
 
   <div class="toolbar">
     <button id="github-save-btn" class="primary">GitHub에 저장</button>
+    <button id="excel-import-btn">엑셀로 곡 추가</button>
     <button id="export-btn">JSON 내보내기</button>
     <button id="import-btn">JSON 불러오기</button>
     <button id="reset-btn">songs.json에서 다시 불러오기</button>
     <input type="file" id="import-file" accept="application/json" style="display:none">
+    <input type="file" id="excel-import-file" accept=".xlsx,.xls" style="display:none">
   </div>
 
   <div class="admin-row new-row">
@@ -56,6 +58,7 @@
   <a class="admin-link" href="index.html">← 목록으로 돌아가기</a>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="admin.js"></script>
 </body>
 </html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>노래책 관리자</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap" id="gate-view">
+  <div class="gate">
+    <h1>🔒 관리자 로그인</h1>
+    <input type="password" id="password" placeholder="비밀번호">
+    <p class="error" id="gate-error"></p>
+    <button class="primary" id="unlock-btn">입장</button>
+  </div>
+</div>
+
+<div class="wrap" id="admin-view" style="display:none">
+  <h1>🎤 노래책 관리자</h1>
+  <p class="subtitle">곡을 수정하고 "GitHub에 저장"을 누르면 잠시 후 실제 사이트에 반영돼요.</p>
+
+  <details class="settings" id="settings-box">
+    <summary>GitHub 연동 설정</summary>
+    <div class="settings-grid">
+      <label>계정/조직명<input type="text" id="cfg-owner" placeholder="예: mystream"></label>
+      <label>저장소 이름<input type="text" id="cfg-repo" placeholder="예: 노래책"></label>
+      <label>브랜치<input type="text" id="cfg-branch" placeholder="main"></label>
+      <label>토큰 (Fine-grained PAT)<input type="password" id="cfg-token" placeholder="github_pat_..."></label>
+    </div>
+    <button id="save-cfg-btn">설정 저장</button>
+    <p class="status" id="cfg-status"></p>
+  </details>
+
+  <div class="toolbar">
+    <button id="github-save-btn" class="primary">GitHub에 저장</button>
+    <button id="export-btn">JSON 내보내기</button>
+    <button id="import-btn">JSON 불러오기</button>
+    <button id="reset-btn">songs.json에서 다시 불러오기</button>
+    <input type="file" id="import-file" accept="application/json" style="display:none">
+  </div>
+
+  <div class="admin-row new-row">
+    <input type="text" id="new-title" placeholder="제목">
+    <input type="text" id="new-artist" placeholder="가수">
+    <input type="text" id="new-tag" placeholder="태그 (선택)">
+    <button class="primary" id="add-btn">추가</button>
+  </div>
+
+  <input type="text" id="admin-search" class="search-box" placeholder="목록에서 곡 찾기..." autocomplete="off">
+
+  <div class="admin-list" id="admin-list"></div>
+
+  <p class="status" id="status"></p>
+  <a class="admin-link" href="index.html">← 목록으로 돌아가기</a>
+</div>
+
+<script src="admin.js"></script>
+</body>
+</html>

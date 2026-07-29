@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>노래책 관리자</title>
-<link rel="stylesheet" href="style.css?v=10">
+<link rel="stylesheet" href="style.css?v=11">
 </head>
 <body>
 <div class="wrap" id="gate-view">
@@ -17,6 +17,7 @@
 </div>
 
 <div class="wrap" id="admin-view" style="display:none">
+  <a class="admin-link" href="index.html">← 목록으로 돌아가기</a>
   <h1>🎤 노래책 관리자</h1>
   <p class="subtitle">곡을 수정하고 "GitHub에 저장"을 누르면 잠시 후 실제 사이트에 반영돼요.</p>
 
@@ -55,7 +56,6 @@
   <div class="admin-list" id="admin-list"></div>
 
   <p class="status" id="status"></p>
-  <a class="admin-link" href="index.html">← 목록으로 돌아가기</a>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>

@@ -188,6 +188,12 @@ h1 {
   color: var(--text);
 }
 
+#admin-view > .admin-link {
+  display: block;
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
 /* Admin page */
 
 .gate {

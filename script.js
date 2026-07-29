@@ -9,6 +9,10 @@ function starsHtml(value) {
   return `<span class="stars"><span class="stars-bg">★★★★★</span><span class="stars-fill" style="width:${pct}%">★★★★★</span></span>`;
 }
 
+function getTags(song) {
+  return song.tags || (song.tag ? [song.tag] : []);
+}
+
 function render(items) {
   listEl.innerHTML = "";
 
@@ -16,6 +20,7 @@ function render(items) {
     listEl.innerHTML = '<li class="empty">검색 결과가 없습니다</li>';
   } else {
     for (const song of items) {
+      const tags = getTags(song);
       const li = document.createElement("li");
       li.className = "song-item";
       li.innerHTML = `
@@ -25,12 +30,18 @@ function render(items) {
         </div>
         <div class="song-side">
           ${song.difficulty ? starsHtml(song.difficulty) : ""}
-          ${song.tag ? `<span class="song-tag"></span>` : ""}
+          <div class="song-tags"></div>
         </div>
       `;
       li.querySelector(".song-title").textContent = song.title;
       li.querySelector(".song-artist").textContent = song.artist;
-      if (song.tag) li.querySelector(".song-tag").textContent = song.tag;
+      const tagsEl = li.querySelector(".song-tags");
+      for (const tag of tags) {
+        const span = document.createElement("span");
+        span.className = "song-tag";
+        span.textContent = tag;
+        tagsEl.appendChild(span);
+      }
       listEl.appendChild(li);
     }
   }
@@ -38,23 +49,36 @@ function render(items) {
   countEl.textContent = `총 ${items.length}곡`;
 }
 
-function filterSongs(query) {
-  const q = query.trim().toLowerCase();
-  if (!q) return songs;
-  return songs.filter(
-    (s) => s.title.toLowerCase().includes(q) || s.artist.toLowerCase().includes(q)
-  );
+let activeTag = "";
+
+function filterSongs() {
+  const q = searchEl.value.trim().toLowerCase();
+  return songs.filter((s) => {
+    const matchesQuery = !q || s.title.toLowerCase().includes(q) || s.artist.toLowerCase().includes(q);
+    const matchesTag = !activeTag || getTags(s).includes(activeTag);
+    return matchesQuery && matchesTag;
+  });
 }
 
-searchEl.addEventListener("input", () => {
-  render(filterSongs(searchEl.value));
+function applyFilters() {
+  render(filterSongs());
+}
+
+searchEl.addEventListener("input", applyFilters);
+
+document.querySelectorAll(".tag-tab").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    activeTag = btn.dataset.tag;
+    document.querySelectorAll(".tag-tab").forEach((b) => b.classList.toggle("active", b === btn));
+    applyFilters();
+  });
 });
 
-fetch("songs.json")
+fetch(`songs.json?t=${Date.now()}`, { cache: "no-store" })
   .then((res) => res.json())
   .then((data) => {
     songs = data;
-    render(songs);
+    applyFilters();
   })
   .catch(() => {
     listEl.innerHTML = '<li class="empty">노래 목록을 불러오지 못했습니다</li>';

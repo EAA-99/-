@@ -2,7 +2,8 @@ const ADMIN_PASSWORD = "DDARIN"; // 배포 전에 꼭 바꾸세요. 브라우저
 const STORAGE_KEY = "songbook_draft";
 const UNLOCK_KEY = "songbook_unlocked";
 const GITHUB_CFG_KEY = "songbook_github_cfg";
-const TAG_OPTIONS = ["한식", "일식", "양식", "완숙", "반숙", "관상용", "연습대기중", "잠금", "친구필요"];
+const TAG_OPTIONS = ["한식", "일식", "양식"];
+const NOTE_OPTIONS = ["완숙", "반숙", "관상용", "연습대기중", "잠금", "친구필요"];
 
 const gateView = document.getElementById("gate-view");
 const adminView = document.getElementById("admin-view");
@@ -104,8 +105,8 @@ document.addEventListener("click", (e) => {
   if (!e.target.closest(".tag-select")) closeAllTagDropdowns();
 });
 
-function createTagSelector(initialTags, onChange) {
-  let selected = new Set(initialTags || []);
+function createTagSelector(options, placeholder, initialTags, onChange) {
+  let selected = new Set((initialTags || []).filter((t) => options.includes(t)));
   const wrap = document.createElement("div");
   wrap.className = "tag-select";
 
@@ -121,11 +122,11 @@ function createTagSelector(initialTags, onChange) {
 
   function updateTrigger() {
     const list = Array.from(selected);
-    trigger.textContent = list.length ? list.join(", ") : "태그 선택";
+    trigger.textContent = list.length ? list.join(", ") : placeholder;
     trigger.classList.toggle("has-tags", list.length > 0);
   }
 
-  for (const tag of TAG_OPTIONS) {
+  for (const tag of options) {
     const option = document.createElement("label");
     option.className = "tag-option";
     const checkbox = document.createElement("input");
@@ -157,9 +158,9 @@ function createTagSelector(initialTags, onChange) {
     el: wrap,
     getValue: () => Array.from(selected),
     setValue: (tags) => {
-      selected = new Set(tags || []);
+      selected = new Set((tags || []).filter((t) => options.includes(t)));
       dropdown.querySelectorAll("input[type=checkbox]").forEach((checkbox, i) => {
-        checkbox.checked = selected.has(TAG_OPTIONS[i]);
+        checkbox.checked = selected.has(options[i]);
       });
       updateTrigger();
     },
@@ -199,8 +200,11 @@ function createStarInput(initialValue, onChange) {
 const newDiffWidget = createStarInput(3, null);
 document.getElementById("new-diff").appendChild(newDiffWidget.el);
 
-const newTagsWidget = createTagSelector([], null);
+const newTagsWidget = createTagSelector(TAG_OPTIONS, "태그 선택", [], null);
 document.getElementById("new-tags").appendChild(newTagsWidget.el);
+
+const newNotesWidget = createTagSelector(NOTE_OPTIONS, "비고 선택", [], null);
+document.getElementById("new-notes").appendChild(newNotesWidget.el);
 
 function render() {
   const query = searchEl.value.trim().toLowerCase();
@@ -219,6 +223,7 @@ function render() {
       <input type="text" class="f-artist" value="">
       <div class="f-diff"></div>
       <div class="f-tags"></div>
+      <div class="f-notes"></div>
       <button class="danger">삭제</button>
     `;
     const titleInput = row.querySelector(".f-title");
@@ -232,11 +237,17 @@ function render() {
     });
     row.querySelector(".f-diff").appendChild(diffWidget.el);
 
-    const tagWidget = createTagSelector(song.tags, (tags) => {
-      song.tags = tags;
+    const tagWidget = createTagSelector(TAG_OPTIONS, "태그 선택", song.tags, (catTags) => {
+      song.tags = [...song.tags.filter((t) => !TAG_OPTIONS.includes(t)), ...catTags];
       save();
     });
     row.querySelector(".f-tags").appendChild(tagWidget.el);
+
+    const noteWidget = createTagSelector(NOTE_OPTIONS, "비고 선택", song.tags, (catTags) => {
+      song.tags = [...song.tags.filter((t) => !NOTE_OPTIONS.includes(t)), ...catTags];
+      save();
+    });
+    row.querySelector(".f-notes").appendChild(noteWidget.el);
 
     titleInput.addEventListener("input", () => {
       song.title = titleInput.value;
@@ -274,7 +285,7 @@ function addSong() {
     id: nextId(),
     title,
     artist,
-    tags: newTagsWidget.getValue(),
+    tags: [...newTagsWidget.getValue(), ...newNotesWidget.getValue()],
     difficulty: newDiffWidget.getValue(),
   });
   save();
@@ -284,6 +295,7 @@ function addSong() {
   artistEl.value = "";
   newDiffWidget.setValue(3);
   newTagsWidget.setValue([]);
+  newNotesWidget.setValue([]);
   titleEl.focus();
 }
 

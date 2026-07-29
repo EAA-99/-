@@ -255,7 +255,7 @@ button.danger {
 
 .admin-row {
   display: grid;
-  grid-template-columns: 1fr 1fr auto auto auto;
+  grid-template-columns: 1fr 1fr auto auto auto auto;
   gap: 8px;
   align-items: center;
   padding: 10px;

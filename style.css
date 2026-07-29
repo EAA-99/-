@@ -306,6 +306,7 @@ button.danger {
 }
 
 .tag-option input[type="checkbox"] {
+  width: auto;
   flex-shrink: 0;
 }
 

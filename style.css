@@ -297,6 +297,20 @@ button.danger {
   color: #fff;
 }
 
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: transparent;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.icon-btn:hover {
+  background: var(--accent-dim);
+  filter: none;
+}
+
 .toolbar {
   display: flex;
   gap: 8px;
@@ -333,6 +347,17 @@ button.danger {
   background: var(--bg);
   color: var(--text);
   font-size: 0.9rem;
+}
+
+.admin-row input[type="text"] {
+  border-color: transparent;
+  background: transparent;
+}
+
+.admin-row input[type="text"]:hover,
+.admin-row input[type="text"]:focus {
+  border-color: var(--border);
+  background: var(--bg);
 }
 
 .f-title-wrap {
@@ -425,6 +450,11 @@ button.danger {
 
 .new-row {
   border-color: var(--accent);
+}
+
+.new-row input[type="text"] {
+  border-color: var(--border);
+  background: var(--bg);
 }
 
 .status {

@@ -369,7 +369,7 @@ function renderAdmin() {
       <div class="f-diff"></div>
       <div class="f-tags"></div>
       <input type="text" class="f-notes" placeholder="비고 (쉼표로 여러개)">
-      <button class="danger">삭제</button>
+      <button class="danger icon-btn" title="삭제">🗑️</button>
     `;
     const selectInput = row.querySelector(".f-select");
     const titleInput = row.querySelector(".f-title");

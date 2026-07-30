@@ -55,6 +55,13 @@
 
   <input type="text" id="admin-search" class="search-box" placeholder="목록에서 곡 찾기..." autocomplete="off">
 
+  <div class="tag-tabs" id="admin-tag-tabs">
+    <button class="tag-tab active" data-tag="">전체</button>
+    <button class="tag-tab" data-tag="양식">양식</button>
+    <button class="tag-tab" data-tag="일식">일식</button>
+    <button class="tag-tab" data-tag="한식">한식</button>
+  </div>
+
   <div class="toolbar">
     <button id="select-all-btn">전체 선택</button>
     <button id="delete-selected-btn" class="danger">선택 삭제</button>
@@ -66,6 +73,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="admin.js?v=12"></script>
+<script src="admin.js?v=13"></script>
 </body>
 </html>

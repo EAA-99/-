@@ -216,13 +216,27 @@ document.getElementById("new-tags").appendChild(newTagsWidget.el);
 
 const newNotesEl = document.getElementById("new-notes");
 
-function render() {
+let activeAdminTag = "";
+
+function getVisibleSongs() {
   const query = searchEl.value.trim().toLowerCase();
-  const visible = query
-    ? songs.filter(
-        (s) => s.title.toLowerCase().includes(query) || s.artist.toLowerCase().includes(query)
-      )
-    : songs;
+  return songs.filter((s) => {
+    const matchesQuery = !query || s.title.toLowerCase().includes(query) || s.artist.toLowerCase().includes(query);
+    const matchesTag = !activeAdminTag || s.tags.includes(activeAdminTag);
+    return matchesQuery && matchesTag;
+  });
+}
+
+document.querySelectorAll("#admin-tag-tabs .tag-tab").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    activeAdminTag = btn.dataset.tag;
+    document.querySelectorAll("#admin-tag-tabs .tag-tab").forEach((b) => b.classList.toggle("active", b === btn));
+    render();
+  });
+});
+
+function render() {
+  const visible = getVisibleSongs();
 
   listEl.innerHTML = "";
   for (const song of visible) {
@@ -290,12 +304,7 @@ function render() {
 searchEl.addEventListener("input", render);
 
 document.getElementById("select-all-btn").addEventListener("click", () => {
-  const query = searchEl.value.trim().toLowerCase();
-  const visible = query
-    ? songs.filter(
-        (s) => s.title.toLowerCase().includes(query) || s.artist.toLowerCase().includes(query)
-      )
-    : songs;
+  const visible = getVisibleSongs();
   const allSelected = visible.length > 0 && visible.every((s) => selectedIds.has(s.id));
   if (allSelected) {
     for (const s of visible) selectedIds.delete(s.id);
@@ -405,6 +414,7 @@ excelFileEl.addEventListener("change", async () => {
     let added = 0;
 
     for (const sheetName of workbook.SheetNames) {
+      if (sheetName === "시트4") continue;
       const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
       const shifted = sheetName === "한식" || sheetName === "일식";
       const artistCol = shifted ? 1 : 2;

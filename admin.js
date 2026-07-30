@@ -367,13 +367,9 @@ excelFileEl.addEventListener("change", async () => {
     const workbook = XLSX.read(buffer, { type: "array" });
     let added = 0;
 
-    let debugShown = false;
     for (const sheetName of workbook.SheetNames) {
       const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
-      if (!debugShown) {
-        debugShown = true;
-        alert(`[진단] 시트: ${sheetName}\n1행: ${JSON.stringify(rows[0])}\n2행: ${JSON.stringify(rows[1])}\n3행: ${JSON.stringify(rows[2])}`);
-      }
+      alert(`[진단] 시트: ${sheetName}\n1행: ${JSON.stringify(rows[0])}\n2행: ${JSON.stringify(rows[1])}\n3행: ${JSON.stringify(rows[2])}`);
       for (let i = 1; i < rows.length; i++) {
         const artist = String(rows[i][2] || "").trim();
         const title = String(rows[i][3] || "").trim();

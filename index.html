@@ -4,18 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>노래책</title>
-<link rel="stylesheet" href="style.css?v=18">
+<link rel="stylesheet" href="style.css?v=19">
 </head>
 <body>
 <div class="wrap">
   <h1>🎤 노래책</h1>
-  <p class="subtitle">제목이나 가수명으로 검색해보세요</p>
-  <input type="text" id="search" class="search-box" placeholder="가수 또는 제목 검색..." autocomplete="off">
-  <select id="sort-select" class="sort-select">
-    <option value="artist">가수이름순</option>
-    <option value="difficulty">숙련도순</option>
-    <option value="title">가나다순</option>
-  </select>
+  <div class="search-row">
+    <input type="text" id="search" class="search-box" placeholder="가수 또는 제목 검색..." autocomplete="off">
+    <select id="sort-select" class="sort-select">
+      <option value="artist">가수이름순</option>
+      <option value="difficulty">숙련도순</option>
+      <option value="title">가나다순</option>
+    </select>
+  </div>
   <div class="tag-tabs" id="tag-tabs">
     <button class="tag-tab active" data-tag="">전체</button>
     <button class="tag-tab" data-tag="한식">한식</button>

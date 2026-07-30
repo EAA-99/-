@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>노래책</title>
-<link rel="stylesheet" href="style.css?v=19">
+<link rel="stylesheet" href="style.css?v=20">
 </head>
 <body>
 <div class="wrap">
@@ -27,6 +27,24 @@
   <ul class="song-list" id="song-list"></ul>
   <a class="admin-link" href="admin.html">관리자</a>
 </div>
-<script src="script.js?v=5"></script>
+
+<button id="quick-add-btn" class="fab">+</button>
+
+<div id="quick-add-modal" class="modal-overlay" hidden>
+  <div class="modal-card">
+    <h2 class="modal-title">곡 추가</h2>
+    <div class="quick-add-row">
+      <input type="text" id="qa-title" placeholder="제목">
+      <input type="text" id="qa-artist" placeholder="가수">
+      <div id="qa-diff"></div>
+      <div id="qa-tags"></div>
+      <input type="text" id="qa-notes" placeholder="비고 (쉼표로 여러개)">
+      <button class="primary" id="qa-submit-btn">추가</button>
+    </div>
+    <p class="status" id="qa-status"></p>
+  </div>
+</div>
+
+<script src="script.js?v=6"></script>
 </body>
 </html>

@@ -80,7 +80,7 @@ async function fetchLatestFromGithub(cfg) {
   const branch = cfg.branch || "main";
   const apiUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/songs.json`;
   const headers = { Authorization: `Bearer ${cfg.token}`, Accept: "application/vnd.github+json" };
-  const res = await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}`, { headers });
+  const res = await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}`, { headers, cache: "no-store" });
   if (!res.ok) throw new Error(`파일 조회 실패 (${res.status})`);
   const data = await res.json();
   return {
@@ -764,7 +764,7 @@ async function saveToGithub() {
 
   try {
     let sha;
-    const getRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}`, { headers });
+    const getRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}`, { headers, cache: "no-store" });
     if (getRes.ok) {
       sha = (await getRes.json()).sha;
     } else if (getRes.status !== 404) {

@@ -3,7 +3,6 @@ const STORAGE_KEY = "songbook_draft";
 const UNLOCK_KEY = "songbook_unlocked";
 const GITHUB_CFG_KEY = "songbook_github_cfg";
 const TAG_OPTIONS = ["한식", "일식", "양식"];
-const NOTE_OPTIONS = ["완숙", "반숙", "관상용", "연습대기중", "잠금", "친구필요"];
 
 const gateView = document.getElementById("gate-view");
 const adminView = document.getElementById("admin-view");
@@ -93,6 +92,17 @@ function normalizeSong(song) {
   }
   delete song.tag;
   return song;
+}
+
+function getNotes(tags) {
+  return (tags || []).filter((t) => !TAG_OPTIONS.includes(t));
+}
+
+function parseNotes(text) {
+  return text
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
 }
 
 function closeAllTagDropdowns(except) {
@@ -203,8 +213,7 @@ document.getElementById("new-diff").appendChild(newDiffWidget.el);
 const newTagsWidget = createTagSelector(TAG_OPTIONS, "태그 선택", [], null);
 document.getElementById("new-tags").appendChild(newTagsWidget.el);
 
-const newNotesWidget = createTagSelector(NOTE_OPTIONS, "비고 선택", [], null);
-document.getElementById("new-notes").appendChild(newNotesWidget.el);
+const newNotesEl = document.getElementById("new-notes");
 
 function render() {
   const query = searchEl.value.trim().toLowerCase();
@@ -223,13 +232,15 @@ function render() {
       <input type="text" class="f-artist" value="">
       <div class="f-diff"></div>
       <div class="f-tags"></div>
-      <div class="f-notes"></div>
+      <input type="text" class="f-notes" placeholder="비고 (쉼표로 여러개)">
       <button class="danger">삭제</button>
     `;
     const titleInput = row.querySelector(".f-title");
     const artistInput = row.querySelector(".f-artist");
+    const notesInput = row.querySelector(".f-notes");
     titleInput.value = song.title;
     artistInput.value = song.artist;
+    notesInput.value = getNotes(song.tags).join(", ");
 
     const diffWidget = createStarInput(song.difficulty || 0, (v) => {
       song.difficulty = v;
@@ -243,11 +254,10 @@ function render() {
     });
     row.querySelector(".f-tags").appendChild(tagWidget.el);
 
-    const noteWidget = createTagSelector(NOTE_OPTIONS, "비고 선택", song.tags, (catTags) => {
-      song.tags = [...song.tags.filter((t) => !NOTE_OPTIONS.includes(t)), ...catTags];
+    notesInput.addEventListener("input", () => {
+      song.tags = [...song.tags.filter((t) => TAG_OPTIONS.includes(t)), ...parseNotes(notesInput.value)];
       save();
     });
-    row.querySelector(".f-notes").appendChild(noteWidget.el);
 
     titleInput.addEventListener("input", () => {
       song.title = titleInput.value;
@@ -285,7 +295,7 @@ function addSong() {
     id: nextId(),
     title,
     artist,
-    tags: [...newTagsWidget.getValue(), ...newNotesWidget.getValue()],
+    tags: [...newTagsWidget.getValue(), ...parseNotes(newNotesEl.value)],
     difficulty: newDiffWidget.getValue(),
   });
   save();
@@ -293,14 +303,14 @@ function addSong() {
 
   titleEl.value = "";
   artistEl.value = "";
+  newNotesEl.value = "";
   newDiffWidget.setValue(3);
   newTagsWidget.setValue([]);
-  newNotesWidget.setValue([]);
   titleEl.focus();
 }
 
 document.getElementById("add-btn").addEventListener("click", addSong);
-for (const id of ["new-title", "new-artist"]) {
+for (const id of ["new-title", "new-artist", "new-notes"]) {
   document.getElementById(id).addEventListener("keydown", (e) => {
     if (e.key === "Enter") addSong();
   });

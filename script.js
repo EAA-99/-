@@ -1,29 +1,33 @@
 // ===== 공통 상수 =====
 const ADMIN_PASSWORD = "DDARIN"; // 배포 전에 꼭 바꾸세요. 브라우저 코드로 노출되므로 강한 보안은 아닙니다.
-const STORAGE_KEY = "songbook_draft";
 const UNLOCK_KEY = "songbook_unlocked";
 const GITHUB_CFG_KEY = "songbook_github_cfg";
 const TAG_OPTIONS = ["한식", "일식", "양식"];
 
 let songs = [];
+let adminUnlocked = false;
 
 // ===== 보기 모드 DOM =====
-const viewModeEl = document.getElementById("view-mode");
 const listEl = document.getElementById("song-list");
 const searchEl = document.getElementById("search");
 const sortEl = document.getElementById("sort-select");
 const countEl = document.getElementById("count");
 
-// ===== 관리자 모드 DOM =====
-const adminGateEl = document.getElementById("admin-gate");
-const adminModeEl = document.getElementById("admin-mode");
-const passwordEl = document.getElementById("password");
-const gateErrorEl = document.getElementById("gate-error");
+// ===== 관리자 도구 DOM =====
+const adminToolsEl = document.getElementById("admin-tools");
 const adminListEl = document.getElementById("admin-list");
 const statusEl = document.getElementById("status");
 const adminSearchEl = document.getElementById("admin-search");
 const adminSortEl = document.getElementById("admin-sort-select");
 const cfgStatusEl = document.getElementById("cfg-status");
+
+// ===== 곡 추가 팝업 DOM =====
+const quickAddBtn = document.getElementById("quick-add-btn");
+const quickAddModal = document.getElementById("quick-add-modal");
+const qaStatusEl = document.getElementById("qa-status");
+const qaTitleEl = document.getElementById("qa-title");
+const qaArtistEl = document.getElementById("qa-artist");
+const qaNotesEl = document.getElementById("qa-notes");
 
 // ===== 공통 헬퍼 =====
 function getTags(song) {
@@ -46,6 +50,13 @@ function normalizeSong(song) {
   return song;
 }
 
+function parseNotes(text) {
+  return text
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
+}
+
 function getGithubConfig() {
   try {
     return JSON.parse(localStorage.getItem(GITHUB_CFG_KEY)) || {};
@@ -61,7 +72,48 @@ function utf8ToBase64(str) {
   return btoa(binary);
 }
 
-// ===== 태그 선택기 / 별점 위젯 (보기 배지, 관리자 편집 공용) =====
+function base64ToUtf8(base64) {
+  const binary = atob(base64.replace(/\n/g, ""));
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+
+// GitHub에서 최신 songs.json + sha를 가져옵니다 (즉시 반영용 추가/삭제와 관리자 도구 새로고침이 공용으로 씁니다).
+async function fetchLatestFromGithub(cfg) {
+  const branch = cfg.branch || "main";
+  const apiUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/songs.json`;
+  const headers = { Authorization: `Bearer ${cfg.token}`, Accept: "application/vnd.github+json" };
+  const res = await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}`, { headers });
+  if (!res.ok) throw new Error(`파일 조회 실패 (${res.status})`);
+  const data = await res.json();
+  return {
+    songs: JSON.parse(base64ToUtf8(data.content)).map(normalizeSong),
+    sha: data.sha,
+    apiUrl,
+    headers,
+    branch,
+  };
+}
+
+async function putSongsToGithub(ctx, newSongs, message) {
+  const res = await fetch(ctx.apiUrl, {
+    method: "PUT",
+    headers: { ...ctx.headers, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      message,
+      content: utf8ToBase64(JSON.stringify(newSongs, null, 2)),
+      branch: ctx.branch,
+      sha: ctx.sha,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `저장 실패 (${res.status})`);
+  }
+}
+
+// ===== 태그 선택기 / 별점 위젯 (팝업, 관리자 도구 공용) =====
 function closeAllTagDropdowns(except) {
   document.querySelectorAll(".tag-dropdown").forEach((d) => {
     if (d !== except) d.hidden = true;
@@ -171,6 +223,24 @@ function starsHtml(value) {
   return `<span class="stars"><span class="stars-bg">★★★★★</span><span class="stars-fill" style="width:${pct}%">★★★★★</span></span>`;
 }
 
+async function quickDeleteSong(song) {
+  if (!confirm(`"${song.title}" (${song.artist})을(를) 삭제할까요?`)) return;
+  const cfg = getGithubConfig();
+  if (!cfg.owner || !cfg.repo || !cfg.token) {
+    alert("GitHub 연동이 설정되어 있지 않습니다. 관리자 도구에서 먼저 설정해주세요.");
+    return;
+  }
+  try {
+    const ctx = await fetchLatestFromGithub(cfg);
+    const filtered = ctx.songs.filter((s) => s.id !== song.id);
+    await putSongsToGithub(ctx, filtered, "노래책 곡 삭제");
+    songs = filtered;
+    applyFilters();
+  } catch (e) {
+    alert(`삭제 실패: ${e.message}`);
+  }
+}
+
 function renderView(items) {
   listEl.innerHTML = "";
 
@@ -194,6 +264,7 @@ function renderView(items) {
           ${song.difficulty ? starsHtml(song.difficulty) : ""}
           <div class="song-tags"></div>
         </div>
+        ${adminUnlocked ? '<button class="icon-btn danger song-delete" title="삭제">🗑️</button>' : ""}
       `;
       if (category) li.querySelector(".song-badge").textContent = category;
       li.querySelector(".song-title").textContent = song.title;
@@ -204,6 +275,9 @@ function renderView(items) {
         span.className = "song-tag";
         span.textContent = tag;
         tagsEl.appendChild(span);
+      }
+      if (adminUnlocked) {
+        li.querySelector(".song-delete").addEventListener("click", () => quickDeleteSong(song));
       }
       listEl.appendChild(li);
     }
@@ -253,14 +327,84 @@ document.querySelectorAll("#tag-tabs .tag-tab").forEach((btn) => {
 fetch(`songs.json?t=${Date.now()}`, { cache: "no-store" })
   .then((res) => res.json())
   .then((data) => {
-    songs = data;
+    songs = data.map(normalizeSong);
     applyFilters();
   })
   .catch(() => {
     listEl.innerHTML = '<li class="empty">노래 목록을 불러오지 못했습니다</li>';
   });
 
-// ===== 관리자 모드 =====
+// ===== 곡 추가 팝업 =====
+
+const qaDiffWidget = createStarInput(3, null);
+document.getElementById("qa-diff").appendChild(qaDiffWidget.el);
+
+const qaTagsWidget = createTagSelector(TAG_OPTIONS, "태그 선택", [], null);
+document.getElementById("qa-tags").appendChild(qaTagsWidget.el);
+
+function setQaStatus(text, type = "") {
+  qaStatusEl.textContent = text;
+  qaStatusEl.className = type ? `status ${type}` : "status";
+}
+
+function closeQuickAddModal() {
+  quickAddModal.hidden = true;
+}
+
+quickAddBtn.addEventListener("click", () => {
+  setQaStatus("");
+  quickAddModal.hidden = false;
+});
+
+quickAddModal.addEventListener("click", (e) => {
+  if (e.target === quickAddModal) closeQuickAddModal();
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !quickAddModal.hidden) closeQuickAddModal();
+});
+
+document.getElementById("qa-submit-btn").addEventListener("click", async () => {
+  const title = qaTitleEl.value.trim();
+  const artist = qaArtistEl.value.trim();
+  if (!title || !artist) {
+    setQaStatus("제목과 가수를 입력해주세요.", "error");
+    return;
+  }
+
+  const cfg = getGithubConfig();
+  if (!cfg.owner || !cfg.repo || !cfg.token) {
+    setQaStatus("GitHub 연동이 설정되어 있지 않습니다. 관리자 도구에서 먼저 설정해주세요.", "error");
+    return;
+  }
+
+  setQaStatus("저장하는 중...");
+  try {
+    const ctx = await fetchLatestFromGithub(cfg);
+    const newSong = {
+      id: ctx.songs.reduce((max, s) => Math.max(max, s.id), 0) + 1,
+      title,
+      artist,
+      tags: [...qaTagsWidget.getValue(), ...parseNotes(qaNotesEl.value)],
+      difficulty: qaDiffWidget.getValue(),
+    };
+    ctx.songs.push(newSong);
+    await putSongsToGithub(ctx, ctx.songs, "노래책 곡 추가");
+
+    songs = ctx.songs;
+    applyFilters();
+    setQaStatus("추가 완료!", "success");
+    qaTitleEl.value = "";
+    qaArtistEl.value = "";
+    qaNotesEl.value = "";
+    qaDiffWidget.setValue(3);
+    qaTagsWidget.setValue([]);
+  } catch (e) {
+    setQaStatus(`저장 실패: ${e.message}`, "error");
+  }
+});
+
+// ===== 관리자 도구 =====
 
 let selectedIds = new Set();
 let activeAdminTag = "";
@@ -274,30 +418,8 @@ function nextId() {
   return songs.reduce((max, s) => Math.max(max, s.id), 0) + 1;
 }
 
-function parseNotes(text) {
-  return text
-    .split(",")
-    .map((t) => t.trim())
-    .filter(Boolean);
-}
-
 function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(songs));
-  setStatus(`저장됨 (${songs.length}곡) — 아직 이 브라우저에만 있어요. "GitHub에 저장"을 눌러야 실제 사이트에 반영됩니다.`);
-}
-
-function loadAdminInitial() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    try {
-      songs = JSON.parse(saved).map(normalizeSong);
-      renderAdmin();
-      return;
-    } catch (e) {
-      console.error("저장된 편집 내용을 읽지 못해 songs.json에서 다시 불러옵니다:", e);
-    }
-  }
-  loadFromFile();
+  setStatus(`수정됨 (${songs.length}곡) — "GitHub에 저장"을 눌러야 실제 사이트에 반영됩니다.`);
 }
 
 function loadFromFile() {
@@ -638,6 +760,7 @@ async function saveToGithub() {
     }
 
     setStatus("GitHub에 저장 완료! 잠시 후 사이트에 반영됩니다.", "success");
+    applyFilters();
   } catch (e) {
     setStatus(`GitHub 저장 실패: ${e.message}`, "error");
   }
@@ -645,49 +768,30 @@ async function saveToGithub() {
 
 document.getElementById("github-save-btn").addEventListener("click", saveToGithub);
 
-// ===== 보기 모드 <-> 관리자 모드 전환 =====
+// ===== 관리자 잠금 해제 =====
 
-function enterAdminMode() {
-  adminGateEl.style.display = "none";
-  viewModeEl.style.display = "none";
-  adminModeEl.style.display = "block";
-  loadAdminInitial();
+function enableAdminUI() {
+  adminUnlocked = true;
+  quickAddBtn.hidden = false;
+  adminToolsEl.hidden = false;
+  renderAdmin();
   loadGithubConfigIntoForm();
+  applyFilters();
 }
 
 document.getElementById("open-admin-link").addEventListener("click", (e) => {
   e.preventDefault();
+  if (adminUnlocked) return;
   if (localStorage.getItem(UNLOCK_KEY) === "1") {
-    enterAdminMode();
-  } else {
-    viewModeEl.style.display = "none";
-    adminGateEl.style.display = "block";
+    enableAdminUI();
+    return;
   }
-});
-
-document.getElementById("cancel-gate-btn").addEventListener("click", () => {
-  adminGateEl.style.display = "none";
-  viewModeEl.style.display = "block";
-  passwordEl.value = "";
-  gateErrorEl.textContent = "";
-});
-
-document.getElementById("unlock-btn").addEventListener("click", () => {
-  if (passwordEl.value === ADMIN_PASSWORD) {
-    localStorage.setItem(UNLOCK_KEY, "1");
-    enterAdminMode();
-  } else {
-    gateErrorEl.textContent = "비밀번호가 틀렸습니다.";
+  const pw = prompt("관리자 비밀번호를 입력하세요");
+  if (pw === null) return;
+  if (pw !== ADMIN_PASSWORD) {
+    alert("비밀번호가 틀렸습니다.");
+    return;
   }
-});
-
-passwordEl.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") document.getElementById("unlock-btn").click();
-});
-
-document.getElementById("back-to-view-link").addEventListener("click", (e) => {
-  e.preventDefault();
-  adminModeEl.style.display = "none";
-  viewModeEl.style.display = "block";
-  applyFilters();
+  localStorage.setItem(UNLOCK_KEY, "1");
+  enableAdminUI();
 });

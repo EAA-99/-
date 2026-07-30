@@ -298,6 +298,16 @@ button.danger {
   border-radius: 10px;
 }
 
+.admin-header {
+  background: transparent;
+  border: none;
+  padding: 0 10px;
+  margin-bottom: -4px;
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
 .admin-row input {
   width: 100%;
   padding: 8px 10px;

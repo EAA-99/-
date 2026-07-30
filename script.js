@@ -809,3 +809,9 @@ async function saveToGithub() {
 document.getElementById("github-save-btn").addEventListener("click", saveToGithub);
 
 loadGithubConfigIntoForm();
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  });
+}

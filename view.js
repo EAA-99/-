@@ -116,9 +116,3 @@ fetch(`songs.json?t=${Date.now()}`, { cache: "no-store" })
   .catch(() => {
     listEl.innerHTML = '<li class="empty">노래 목록을 불러오지 못했습니다</li>';
   });
-
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js").catch(() => {});
-  });
-}

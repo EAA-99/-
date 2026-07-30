@@ -109,6 +109,28 @@ async function putSongsToGithub(ctx, newSongs, message) {
   }
 }
 
+// GitHub에 커밋을 연달아 하면 방금 만든 sha가 아직 조회 API에 안 나타날 때가 있어서(전파 지연),
+// 실패하면 최신 sha를 다시 가져와 짧게 재시도합니다.
+async function updateSongsOnGithub(mutate, message, attempts = 3) {
+  const cfg = getGithubConfig();
+  if (!cfg.owner || !cfg.repo || !cfg.token) {
+    throw new Error("GitHub 연동이 설정되어 있지 않습니다. 관리자 도구에서 먼저 설정해주세요.");
+  }
+  let lastError;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      const ctx = await fetchLatestFromGithub(cfg);
+      const newSongs = mutate(ctx.songs);
+      await putSongsToGithub(ctx, newSongs, message);
+      return newSongs;
+    } catch (e) {
+      lastError = e;
+      if (i < attempts - 1) await new Promise((r) => setTimeout(r, 500));
+    }
+  }
+  throw lastError;
+}
+
 // ===== 태그 선택기 / 별점 위젯 (팝업, 관리자 도구 공용) =====
 function closeAllTagDropdowns(except) {
   document.querySelectorAll(".tag-dropdown").forEach((d) => {
@@ -221,16 +243,11 @@ function starsHtml(value) {
 
 async function quickDeleteSong(song) {
   if (!confirm(`"${song.title}" (${song.artist})을(를) 삭제할까요?`)) return;
-  const cfg = getGithubConfig();
-  if (!cfg.owner || !cfg.repo || !cfg.token) {
-    alert("GitHub 연동이 설정되어 있지 않습니다. 관리자 도구에서 먼저 설정해주세요.");
-    return;
-  }
   try {
-    const ctx = await fetchLatestFromGithub(cfg);
-    const filtered = ctx.songs.filter((s) => s.id !== song.id);
-    await putSongsToGithub(ctx, filtered, "노래책 곡 삭제");
-    songs = filtered;
+    songs = await updateSongsOnGithub(
+      (current) => current.filter((s) => s.id !== song.id),
+      "노래책 곡 삭제"
+    );
     applyFilters();
   } catch (e) {
     alert(`삭제 실패: ${e.message}`);
@@ -397,34 +414,25 @@ document.getElementById("qa-submit-btn").addEventListener("click", async () => {
     return;
   }
 
-  const cfg = getGithubConfig();
-  if (!cfg.owner || !cfg.repo || !cfg.token) {
-    setQaStatus("GitHub 연동이 설정되어 있지 않습니다. 관리자 도구에서 먼저 설정해주세요.", "error");
-    return;
-  }
-
   setQaStatus("저장하는 중...");
+  const tags = [...qaTagsWidget.getValue(), ...parseNotes(qaNotesEl.value)];
+  const difficulty = qaDiffWidget.getValue();
+
   try {
-    const ctx = await fetchLatestFromGithub(cfg);
-    const tags = [...qaTagsWidget.getValue(), ...parseNotes(qaNotesEl.value)];
-    const difficulty = qaDiffWidget.getValue();
+    songs = await updateSongsOnGithub((current) => {
+      if (editingSongId) {
+        const idx = current.findIndex((s) => s.id === editingSongId);
+        if (idx === -1) throw new Error("곡을 찾을 수 없습니다. 이미 삭제되었을 수 있어요.");
+        const updated = [...current];
+        updated[idx] = { ...updated[idx], title, artist, tags, difficulty };
+        return updated;
+      }
+      return [
+        ...current,
+        { id: current.reduce((max, s) => Math.max(max, s.id), 0) + 1, title, artist, tags, difficulty },
+      ];
+    }, editingSongId ? "노래책 곡 수정" : "노래책 곡 추가");
 
-    if (editingSongId) {
-      const idx = ctx.songs.findIndex((s) => s.id === editingSongId);
-      if (idx === -1) throw new Error("곡을 찾을 수 없습니다. 이미 삭제되었을 수 있어요.");
-      ctx.songs[idx] = { ...ctx.songs[idx], title, artist, tags, difficulty };
-    } else {
-      ctx.songs.push({
-        id: ctx.songs.reduce((max, s) => Math.max(max, s.id), 0) + 1,
-        title,
-        artist,
-        tags,
-        difficulty,
-      });
-    }
-    await putSongsToGithub(ctx, ctx.songs, editingSongId ? "노래책 곡 수정" : "노래책 곡 추가");
-
-    songs = ctx.songs;
     applyFilters();
     closeQuickAddModal();
   } catch (e) {

@@ -57,6 +57,18 @@ h1 {
   border-color: var(--accent);
 }
 
+.sort-select {
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+}
+
 .count {
   color: var(--text-dim);
   font-size: 0.85rem;
@@ -104,6 +116,24 @@ h1 {
 
 .song-main {
   min-width: 0;
+}
+
+.song-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.song-badge {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  white-space: nowrap;
 }
 
 .song-title {

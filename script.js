@@ -1,6 +1,9 @@
 const listEl = document.getElementById("song-list");
 const searchEl = document.getElementById("search");
+const sortEl = document.getElementById("sort-select");
 const countEl = document.getElementById("count");
+
+const CATEGORY_TAGS = ["한식", "일식", "양식"];
 
 let songs = [];
 
@@ -13,6 +16,14 @@ function getTags(song) {
   return song.tags || (song.tag ? [song.tag] : []);
 }
 
+function getCategoryTag(song) {
+  return getTags(song).find((t) => CATEGORY_TAGS.includes(t)) || "";
+}
+
+function getNoteTags(song) {
+  return getTags(song).filter((t) => !CATEGORY_TAGS.includes(t));
+}
+
 function render(items) {
   listEl.innerHTML = "";
 
@@ -20,12 +31,16 @@ function render(items) {
     listEl.innerHTML = '<li class="empty">검색 결과가 없습니다</li>';
   } else {
     for (const song of items) {
-      const tags = getTags(song);
+      const category = getCategoryTag(song);
+      const notes = getNoteTags(song);
       const li = document.createElement("li");
       li.className = "song-item";
       li.innerHTML = `
         <div class="song-main">
-          <div class="song-title"></div>
+          <div class="song-title-row">
+            ${category ? `<span class="song-badge"></span>` : ""}
+            <span class="song-title"></span>
+          </div>
           <div class="song-artist"></div>
         </div>
         <div class="song-side">
@@ -33,10 +48,11 @@ function render(items) {
           <div class="song-tags"></div>
         </div>
       `;
+      if (category) li.querySelector(".song-badge").textContent = category;
       li.querySelector(".song-title").textContent = song.title;
       li.querySelector(".song-artist").textContent = song.artist;
       const tagsEl = li.querySelector(".song-tags");
-      for (const tag of tags) {
+      for (const tag of notes) {
         const span = document.createElement("span");
         span.className = "song-tag";
         span.textContent = tag;
@@ -60,11 +76,24 @@ function filterSongs() {
   });
 }
 
+function sortSongs(items) {
+  const sorted = [...items];
+  if (sortEl.value === "difficulty") {
+    sorted.sort((a, b) => (b.difficulty || 0) - (a.difficulty || 0));
+  } else if (sortEl.value === "title") {
+    sorted.sort((a, b) => a.title.localeCompare(b.title, "ko"));
+  } else {
+    sorted.sort((a, b) => a.artist.localeCompare(b.artist, "ko"));
+  }
+  return sorted;
+}
+
 function applyFilters() {
-  render(filterSongs());
+  render(sortSongs(filterSongs()));
 }
 
 searchEl.addEventListener("input", applyFilters);
+sortEl.addEventListener("change", applyFilters);
 
 document.querySelectorAll(".tag-tab").forEach((btn) => {
   btn.addEventListener("click", () => {

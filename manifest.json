@@ -1,0 +1,14 @@
+{
+  "name": "노래책",
+  "short_name": "노래책",
+  "description": "인터넷 방송 노래책 (시청자용)",
+  "start_url": "./view.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#14151a",
+  "theme_color": "#ff6fa5",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

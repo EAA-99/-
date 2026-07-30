@@ -266,6 +266,7 @@ function renderView(items) {
       const li = document.createElement("li");
       li.className = "song-item";
       li.innerHTML = `
+        <input type="checkbox" class="song-select">
         <div class="song-main">
           <div class="song-title-row">
             ${category ? `<span class="song-badge"></span>` : ""}
@@ -289,6 +290,13 @@ function renderView(items) {
         span.textContent = tag;
         tagsEl.appendChild(span);
       }
+      const selectInput = li.querySelector(".song-select");
+      selectInput.checked = viewSelectedIds.has(song.id);
+      selectInput.addEventListener("click", (e) => e.stopPropagation());
+      selectInput.addEventListener("change", () => {
+        if (selectInput.checked) viewSelectedIds.add(song.id);
+        else viewSelectedIds.delete(song.id);
+      });
       li.querySelector(".song-delete").addEventListener("click", (e) => {
         e.stopPropagation();
         quickDeleteSong(song);
@@ -302,6 +310,7 @@ function renderView(items) {
 }
 
 let activeTag = "";
+let viewSelectedIds = new Set();
 
 function filterSongs() {
   const q = searchEl.value.trim().toLowerCase();
@@ -339,6 +348,35 @@ document.querySelectorAll("#tag-tabs .tag-tab").forEach((btn) => {
     document.querySelectorAll("#tag-tabs .tag-tab").forEach((b) => b.classList.toggle("active", b === btn));
     applyFilters();
   });
+});
+
+document.getElementById("view-select-all-btn").addEventListener("click", () => {
+  const visible = sortSongs(filterSongs());
+  const allSelected = visible.length > 0 && visible.every((s) => viewSelectedIds.has(s.id));
+  if (allSelected) {
+    for (const s of visible) viewSelectedIds.delete(s.id);
+  } else {
+    for (const s of visible) viewSelectedIds.add(s.id);
+  }
+  applyFilters();
+});
+
+document.getElementById("view-delete-selected-btn").addEventListener("click", async () => {
+  if (viewSelectedIds.size === 0) {
+    alert("선택된 곡이 없습니다.");
+    return;
+  }
+  if (!confirm(`선택한 ${viewSelectedIds.size}곡을 삭제할까요?`)) return;
+  try {
+    songs = await updateSongsOnGithub(
+      (current) => current.filter((s) => !viewSelectedIds.has(s.id)),
+      "노래책 곡 일괄 삭제"
+    );
+    viewSelectedIds.clear();
+    applyFilters();
+  } catch (e) {
+    alert(`삭제 실패: ${e.message}`);
+  }
 });
 
 fetch(`songs.json?t=${Date.now()}`, { cache: "no-store" })

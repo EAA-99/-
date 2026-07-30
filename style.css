@@ -147,6 +147,10 @@ h1 {
   border-color: var(--accent);
 }
 
+.song-select {
+  flex-shrink: 0;
+}
+
 .song-main {
   flex: 1;
   min-width: 0;

@@ -11,10 +11,7 @@ const sortEl = document.getElementById("sort-select");
 const countEl = document.getElementById("count");
 
 // ===== 관리자 도구 DOM =====
-const adminListEl = document.getElementById("admin-list");
 const statusEl = document.getElementById("status");
-const adminSearchEl = document.getElementById("admin-search");
-const adminSortEl = document.getElementById("admin-sort-select");
 const cfgStatusEl = document.getElementById("cfg-status");
 
 // ===== 곡 추가 팝업 DOM =====
@@ -384,7 +381,6 @@ fetch(`songs.json?t=${Date.now()}`, { cache: "no-store" })
   .then((data) => {
     songs = data.map(normalizeSong);
     applyFilters();
-    renderAdmin();
   })
   .catch(() => {
     listEl.innerHTML = '<li class="empty">노래 목록을 불러오지 못했습니다</li>';
@@ -482,9 +478,6 @@ document.getElementById("qa-submit-btn").addEventListener("click", async () => {
 
 // ===== 관리자 도구 =====
 
-let selectedIds = new Set();
-let activeAdminTag = "";
-
 function setStatus(text, type = "") {
   statusEl.textContent = text;
   statusEl.className = type ? `status ${type}` : "status";
@@ -504,191 +497,13 @@ function loadFromFile() {
     .then((data) => {
       songs = data.map(normalizeSong);
       save();
-      renderAdmin();
+      applyFilters();
     })
     .catch(() => {
       songs = [];
-      renderAdmin();
+      applyFilters();
       setStatus("songs.json을 불러오지 못했습니다. 빈 목록으로 시작합니다.", "error");
     });
-}
-
-const newDiffWidget = createStarInput(3, null);
-document.getElementById("new-diff").appendChild(newDiffWidget.el);
-
-const newTagsWidget = createTagSelector(TAG_OPTIONS, "태그 선택", [], null);
-document.getElementById("new-tags").appendChild(newTagsWidget.el);
-
-const newNotesEl = document.getElementById("new-notes");
-
-function getVisibleAdminSongs() {
-  const query = adminSearchEl.value.trim().toLowerCase();
-  const filtered = songs.filter((s) => {
-    const matchesQuery = !query || s.title.toLowerCase().includes(query) || s.artist.toLowerCase().includes(query);
-    const matchesTag = !activeAdminTag || s.tags.includes(activeAdminTag);
-    return matchesQuery && matchesTag;
-  });
-
-  const sorted = [...filtered];
-  if (adminSortEl.value === "difficulty") {
-    sorted.sort((a, b) => (b.difficulty || 0) - (a.difficulty || 0));
-  } else if (adminSortEl.value === "title") {
-    sorted.sort((a, b) => a.title.localeCompare(b.title, "ko"));
-  } else if (adminSortEl.value === "recent") {
-    sorted.sort((a, b) => b.id - a.id);
-  } else {
-    sorted.sort((a, b) => a.artist.localeCompare(b.artist, "ko"));
-  }
-  return sorted;
-}
-
-document.querySelectorAll("#admin-tag-tabs .tag-tab").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    activeAdminTag = btn.dataset.tag;
-    document.querySelectorAll("#admin-tag-tabs .tag-tab").forEach((b) => b.classList.toggle("active", b === btn));
-    renderAdmin();
-  });
-});
-
-adminSortEl.addEventListener("change", renderAdmin);
-
-function renderAdmin() {
-  const visible = getVisibleAdminSongs();
-
-  adminListEl.innerHTML = "";
-  for (const song of visible) {
-    const row = document.createElement("div");
-    row.className = "admin-row";
-    row.innerHTML = `
-      <input type="checkbox" class="f-select">
-      <div class="f-title-wrap">
-        <span class="song-badge f-badge"></span>
-        <input type="text" class="f-title" value="">
-      </div>
-      <input type="text" class="f-artist" value="">
-      <div class="f-diff"></div>
-      <div class="f-tags"></div>
-      <input type="text" class="f-notes" placeholder="비고 (쉼표로 여러개)">
-      <button class="danger icon-btn" title="삭제">🗑️</button>
-    `;
-    const selectInput = row.querySelector(".f-select");
-    const titleInput = row.querySelector(".f-title");
-    const artistInput = row.querySelector(".f-artist");
-    const notesInput = row.querySelector(".f-notes");
-    const badgeEl = row.querySelector(".f-badge");
-    selectInput.checked = selectedIds.has(song.id);
-    selectInput.addEventListener("change", () => {
-      if (selectInput.checked) selectedIds.add(song.id);
-      else selectedIds.delete(song.id);
-    });
-    titleInput.value = song.title;
-    artistInput.value = song.artist;
-    notesInput.value = getNoteTags(song).join(", ");
-
-    function updateBadge() {
-      const category = getCategoryTag(song);
-      badgeEl.textContent = category;
-      badgeEl.style.display = category ? "" : "none";
-    }
-    updateBadge();
-
-    const diffWidget = createStarInput(song.difficulty || 0, (v) => {
-      song.difficulty = v;
-      save();
-    });
-    row.querySelector(".f-diff").appendChild(diffWidget.el);
-
-    const tagWidget = createTagSelector(TAG_OPTIONS, "태그 선택", song.tags, (catTags) => {
-      song.tags = [...song.tags.filter((t) => !TAG_OPTIONS.includes(t)), ...catTags];
-      updateBadge();
-      save();
-    });
-    row.querySelector(".f-tags").appendChild(tagWidget.el);
-
-    notesInput.addEventListener("input", () => {
-      song.tags = [...song.tags.filter((t) => TAG_OPTIONS.includes(t)), ...parseNotes(notesInput.value)];
-      save();
-    });
-
-    titleInput.addEventListener("input", () => {
-      song.title = titleInput.value;
-      save();
-    });
-    artistInput.addEventListener("input", () => {
-      song.artist = artistInput.value;
-      save();
-    });
-    row.querySelector(".danger").addEventListener("click", () => {
-      if (!confirm(`"${song.title}" (${song.artist})을(를) 삭제할까요?`)) return;
-      songs = songs.filter((s) => s.id !== song.id);
-      selectedIds.delete(song.id);
-      save();
-      renderAdmin();
-    });
-
-    adminListEl.appendChild(row);
-  }
-}
-
-adminSearchEl.addEventListener("input", renderAdmin);
-
-document.getElementById("select-all-btn").addEventListener("click", () => {
-  const visible = getVisibleAdminSongs();
-  const allSelected = visible.length > 0 && visible.every((s) => selectedIds.has(s.id));
-  if (allSelected) {
-    for (const s of visible) selectedIds.delete(s.id);
-  } else {
-    for (const s of visible) selectedIds.add(s.id);
-  }
-  renderAdmin();
-});
-
-document.getElementById("delete-selected-btn").addEventListener("click", () => {
-  if (selectedIds.size === 0) {
-    setStatus("선택된 곡이 없습니다.", "error");
-    return;
-  }
-  if (!confirm(`선택한 ${selectedIds.size}곡을 삭제할까요?`)) return;
-  songs = songs.filter((s) => !selectedIds.has(s.id));
-  selectedIds.clear();
-  save();
-  renderAdmin();
-});
-
-function addSong() {
-  const titleEl = document.getElementById("new-title");
-  const artistEl = document.getElementById("new-artist");
-
-  const title = titleEl.value.trim();
-  const artist = artistEl.value.trim();
-  if (!title || !artist) {
-    setStatus("제목과 가수를 모두 입력해주세요.", "error");
-    return;
-  }
-
-  songs.push({
-    id: nextId(),
-    title,
-    artist,
-    tags: [...newTagsWidget.getValue(), ...parseNotes(newNotesEl.value)],
-    difficulty: newDiffWidget.getValue(),
-  });
-  save();
-  renderAdmin();
-
-  titleEl.value = "";
-  artistEl.value = "";
-  newNotesEl.value = "";
-  newDiffWidget.setValue(3);
-  newTagsWidget.setValue([]);
-  titleEl.focus();
-}
-
-document.getElementById("add-btn").addEventListener("click", addSong);
-for (const id of ["new-title", "new-artist", "new-notes"]) {
-  document.getElementById(id).addEventListener("keydown", (e) => {
-    if (e.key === "Enter") addSong();
-  });
 }
 
 document.getElementById("export-btn").addEventListener("click", () => {
@@ -721,7 +536,7 @@ importFileEl.addEventListener("change", () => {
       if (!Array.isArray(data)) throw new Error("not an array");
       songs = data.map(normalizeSong);
       save();
-      renderAdmin();
+      applyFilters();
     } catch {
       setStatus("올바른 JSON 파일이 아닙니다.", "error");
     }
@@ -761,7 +576,7 @@ excelFileEl.addEventListener("change", async () => {
     }
 
     save();
-    renderAdmin();
+    applyFilters();
     setStatus(`엑셀에서 ${added}곡을 추가했습니다.`, "success");
   } catch (err) {
     setStatus(`엑셀 파일을 읽지 못했습니다: ${err.message}`, "error");

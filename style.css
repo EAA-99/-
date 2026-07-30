@@ -38,9 +38,6 @@ body {
   margin-bottom: 12px;
 }
 
-.admin-table-scroll {
-  overflow-x: auto;
-}
 
 h1 {
   font-size: 1.5rem;
@@ -324,64 +321,6 @@ button.danger {
   margin-bottom: 16px;
 }
 
-.admin-row {
-  display: grid;
-  grid-template-columns: 22px minmax(140px, 1fr) minmax(140px, 1fr) 100px 150px 170px 70px;
-  gap: 8px;
-  align-items: center;
-  padding: 10px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-}
-
-.admin-header {
-  background: transparent;
-  border: none;
-  padding: 0 10px;
-  margin-bottom: -4px;
-  color: var(--text-dim);
-  font-size: 0.78rem;
-  font-weight: 600;
-}
-
-.admin-row input {
-  width: 100%;
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--text);
-  font-size: 0.9rem;
-}
-
-.admin-row input[type="text"] {
-  border-color: transparent;
-  background: transparent;
-}
-
-.admin-row input[type="text"]:hover,
-.admin-row input[type="text"]:focus {
-  border-color: var(--border);
-  background: var(--bg);
-}
-
-.f-title-wrap {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-}
-
-.f-title-wrap .f-title {
-  flex: 1;
-  min-width: 0;
-}
-
-.f-badge {
-  flex-shrink: 0;
-}
-
 .tag-select {
   position: relative;
 }
@@ -447,21 +386,6 @@ button.danger {
   background: var(--surface);
 }
 
-.admin-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.new-row {
-  border-color: var(--accent);
-}
-
-.new-row input[type="text"] {
-  border-color: var(--border);
-  background: var(--bg);
-}
 
 .status {
   color: var(--text-dim);
@@ -513,10 +437,6 @@ button.danger {
   background: var(--bg);
   color: var(--text);
   font-size: 0.9rem;
-}
-
-#admin-search {
-  margin-bottom: 16px;
 }
 
 .page-header {

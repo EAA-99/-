@@ -318,6 +318,8 @@ function sortSongs(items) {
     sorted.sort((a, b) => (b.difficulty || 0) - (a.difficulty || 0));
   } else if (sortEl.value === "title") {
     sorted.sort((a, b) => a.title.localeCompare(b.title, "ko"));
+  } else if (sortEl.value === "recent") {
+    sorted.sort((a, b) => b.id - a.id);
   } else {
     sorted.sort((a, b) => a.artist.localeCompare(b.artist, "ko"));
   }
@@ -494,6 +496,8 @@ function getVisibleAdminSongs() {
     sorted.sort((a, b) => (b.difficulty || 0) - (a.difficulty || 0));
   } else if (adminSortEl.value === "title") {
     sorted.sort((a, b) => a.title.localeCompare(b.title, "ko"));
+  } else if (adminSortEl.value === "recent") {
+    sorted.sort((a, b) => b.id - a.id);
   } else {
     sorted.sort((a, b) => a.artist.localeCompare(b.artist, "ko"));
   }

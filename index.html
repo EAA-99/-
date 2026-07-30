@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>노래책</title>
-<link rel="stylesheet" href="style.css?v=25">
+<link rel="stylesheet" href="style.css?v=26">
 </head>
 <body>
 
@@ -104,20 +104,23 @@
 
 <div id="quick-add-modal" class="modal-overlay" hidden>
   <div class="modal-card">
-    <h2 class="modal-title">곡 추가</h2>
+    <h2 class="modal-title" id="qa-modal-title">곡 추가</h2>
     <div class="quick-add-row">
       <input type="text" id="qa-title" placeholder="제목">
       <input type="text" id="qa-artist" placeholder="가수">
       <div id="qa-diff"></div>
       <div id="qa-tags"></div>
       <input type="text" id="qa-notes" placeholder="비고 (쉼표로 여러개)">
-      <button class="primary" id="qa-submit-btn">추가</button>
+    </div>
+    <div class="modal-actions">
+      <button class="primary" id="qa-submit-btn">저장</button>
+      <button id="qa-cancel-btn">취소</button>
     </div>
     <p class="status" id="qa-status"></p>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="script.js?v=10"></script>
+<script src="script.js?v=11"></script>
 </body>
 </html>

@@ -272,7 +272,11 @@ function renderView(items) {
         span.textContent = tag;
         tagsEl.appendChild(span);
       }
-      li.querySelector(".song-delete").addEventListener("click", () => quickDeleteSong(song));
+      li.querySelector(".song-delete").addEventListener("click", (e) => {
+        e.stopPropagation();
+        quickDeleteSong(song);
+      });
+      li.addEventListener("click", () => openEditModal(song));
       listEl.appendChild(li);
     }
   }
@@ -329,13 +333,16 @@ fetch(`songs.json?t=${Date.now()}`, { cache: "no-store" })
     listEl.innerHTML = '<li class="empty">노래 목록을 불러오지 못했습니다</li>';
   });
 
-// ===== 곡 추가 팝업 =====
+// ===== 곡 추가/수정 팝업 =====
 
 const qaDiffWidget = createStarInput(3, null);
 document.getElementById("qa-diff").appendChild(qaDiffWidget.el);
 
 const qaTagsWidget = createTagSelector(TAG_OPTIONS, "태그 선택", [], null);
 document.getElementById("qa-tags").appendChild(qaTagsWidget.el);
+
+const qaModalTitleEl = document.getElementById("qa-modal-title");
+let editingSongId = null;
 
 function setQaStatus(text, type = "") {
   qaStatusEl.textContent = text;
@@ -346,10 +353,33 @@ function closeQuickAddModal() {
   quickAddModal.hidden = true;
 }
 
-quickAddBtn.addEventListener("click", () => {
+function openAddModal() {
+  editingSongId = null;
+  qaModalTitleEl.textContent = "곡 추가";
+  qaTitleEl.value = "";
+  qaArtistEl.value = "";
+  qaNotesEl.value = "";
+  qaDiffWidget.setValue(3);
+  qaTagsWidget.setValue([]);
   setQaStatus("");
   quickAddModal.hidden = false;
-});
+}
+
+function openEditModal(song) {
+  editingSongId = song.id;
+  qaModalTitleEl.textContent = "곡 수정";
+  qaTitleEl.value = song.title;
+  qaArtistEl.value = song.artist;
+  qaNotesEl.value = getNoteTags(song).join(", ");
+  qaDiffWidget.setValue(song.difficulty || 0);
+  qaTagsWidget.setValue(song.tags);
+  setQaStatus("");
+  quickAddModal.hidden = false;
+}
+
+quickAddBtn.addEventListener("click", openAddModal);
+
+document.getElementById("qa-cancel-btn").addEventListener("click", closeQuickAddModal);
 
 quickAddModal.addEventListener("click", (e) => {
   if (e.target === quickAddModal) closeQuickAddModal();
@@ -376,24 +406,27 @@ document.getElementById("qa-submit-btn").addEventListener("click", async () => {
   setQaStatus("저장하는 중...");
   try {
     const ctx = await fetchLatestFromGithub(cfg);
-    const newSong = {
-      id: ctx.songs.reduce((max, s) => Math.max(max, s.id), 0) + 1,
-      title,
-      artist,
-      tags: [...qaTagsWidget.getValue(), ...parseNotes(qaNotesEl.value)],
-      difficulty: qaDiffWidget.getValue(),
-    };
-    ctx.songs.push(newSong);
-    await putSongsToGithub(ctx, ctx.songs, "노래책 곡 추가");
+    const tags = [...qaTagsWidget.getValue(), ...parseNotes(qaNotesEl.value)];
+    const difficulty = qaDiffWidget.getValue();
+
+    if (editingSongId) {
+      const idx = ctx.songs.findIndex((s) => s.id === editingSongId);
+      if (idx === -1) throw new Error("곡을 찾을 수 없습니다. 이미 삭제되었을 수 있어요.");
+      ctx.songs[idx] = { ...ctx.songs[idx], title, artist, tags, difficulty };
+    } else {
+      ctx.songs.push({
+        id: ctx.songs.reduce((max, s) => Math.max(max, s.id), 0) + 1,
+        title,
+        artist,
+        tags,
+        difficulty,
+      });
+    }
+    await putSongsToGithub(ctx, ctx.songs, editingSongId ? "노래책 곡 수정" : "노래책 곡 추가");
 
     songs = ctx.songs;
     applyFilters();
-    setQaStatus("추가 완료!", "success");
-    qaTitleEl.value = "";
-    qaArtistEl.value = "";
-    qaNotesEl.value = "";
-    qaDiffWidget.setValue(3);
-    qaTagsWidget.setValue([]);
+    closeQuickAddModal();
   } catch (e) {
     setQaStatus(`저장 실패: ${e.message}`, "error");
   }

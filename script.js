@@ -1,11 +1,8 @@
 // ===== 공통 상수 =====
-const ADMIN_PASSWORD = "DDARIN"; // 배포 전에 꼭 바꾸세요. 브라우저 코드로 노출되므로 강한 보안은 아닙니다.
-const UNLOCK_KEY = "songbook_unlocked";
 const GITHUB_CFG_KEY = "songbook_github_cfg";
 const TAG_OPTIONS = ["한식", "일식", "양식"];
 
 let songs = [];
-let adminUnlocked = false;
 
 // ===== 보기 모드 DOM =====
 const listEl = document.getElementById("song-list");
@@ -14,7 +11,6 @@ const sortEl = document.getElementById("sort-select");
 const countEl = document.getElementById("count");
 
 // ===== 관리자 도구 DOM =====
-const adminToolsEl = document.getElementById("admin-tools");
 const adminListEl = document.getElementById("admin-list");
 const statusEl = document.getElementById("status");
 const adminSearchEl = document.getElementById("admin-search");
@@ -264,7 +260,7 @@ function renderView(items) {
           ${song.difficulty ? starsHtml(song.difficulty) : ""}
           <div class="song-tags"></div>
         </div>
-        ${adminUnlocked ? '<button class="icon-btn danger song-delete" title="삭제">🗑️</button>' : ""}
+        <button class="icon-btn danger song-delete" title="삭제">🗑️</button>
       `;
       if (category) li.querySelector(".song-badge").textContent = category;
       li.querySelector(".song-title").textContent = song.title;
@@ -276,9 +272,7 @@ function renderView(items) {
         span.textContent = tag;
         tagsEl.appendChild(span);
       }
-      if (adminUnlocked) {
-        li.querySelector(".song-delete").addEventListener("click", () => quickDeleteSong(song));
-      }
+      li.querySelector(".song-delete").addEventListener("click", () => quickDeleteSong(song));
       listEl.appendChild(li);
     }
   }
@@ -329,6 +323,7 @@ fetch(`songs.json?t=${Date.now()}`, { cache: "no-store" })
   .then((data) => {
     songs = data.map(normalizeSong);
     applyFilters();
+    renderAdmin();
   })
   .catch(() => {
     listEl.innerHTML = '<li class="empty">노래 목록을 불러오지 못했습니다</li>';
@@ -768,30 +763,4 @@ async function saveToGithub() {
 
 document.getElementById("github-save-btn").addEventListener("click", saveToGithub);
 
-// ===== 관리자 잠금 해제 =====
-
-function enableAdminUI() {
-  adminUnlocked = true;
-  quickAddBtn.hidden = false;
-  adminToolsEl.hidden = false;
-  renderAdmin();
-  loadGithubConfigIntoForm();
-  applyFilters();
-}
-
-document.getElementById("open-admin-link").addEventListener("click", (e) => {
-  e.preventDefault();
-  if (adminUnlocked) return;
-  if (localStorage.getItem(UNLOCK_KEY) === "1") {
-    enableAdminUI();
-    return;
-  }
-  const pw = prompt("관리자 비밀번호를 입력하세요");
-  if (pw === null) return;
-  if (pw !== ADMIN_PASSWORD) {
-    alert("비밀번호가 틀렸습니다.");
-    return;
-  }
-  localStorage.setItem(UNLOCK_KEY, "1");
-  enableAdminUI();
-});
+loadGithubConfigIntoForm();

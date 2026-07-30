@@ -99,6 +99,10 @@ function getNotes(tags) {
   return (tags || []).filter((t) => !TAG_OPTIONS.includes(t));
 }
 
+function getCategoryTag(tags) {
+  return (tags || []).find((t) => TAG_OPTIONS.includes(t)) || "";
+}
+
 function parseNotes(text) {
   return text
     .split(",")
@@ -217,14 +221,25 @@ document.getElementById("new-tags").appendChild(newTagsWidget.el);
 const newNotesEl = document.getElementById("new-notes");
 
 let activeAdminTag = "";
+const adminSortEl = document.getElementById("admin-sort-select");
 
 function getVisibleSongs() {
   const query = searchEl.value.trim().toLowerCase();
-  return songs.filter((s) => {
+  const filtered = songs.filter((s) => {
     const matchesQuery = !query || s.title.toLowerCase().includes(query) || s.artist.toLowerCase().includes(query);
     const matchesTag = !activeAdminTag || s.tags.includes(activeAdminTag);
     return matchesQuery && matchesTag;
   });
+
+  const sorted = [...filtered];
+  if (adminSortEl.value === "difficulty") {
+    sorted.sort((a, b) => (b.difficulty || 0) - (a.difficulty || 0));
+  } else if (adminSortEl.value === "title") {
+    sorted.sort((a, b) => a.title.localeCompare(b.title, "ko"));
+  } else {
+    sorted.sort((a, b) => a.artist.localeCompare(b.artist, "ko"));
+  }
+  return sorted;
 }
 
 document.querySelectorAll("#admin-tag-tabs .tag-tab").forEach((btn) => {
@@ -235,6 +250,8 @@ document.querySelectorAll("#admin-tag-tabs .tag-tab").forEach((btn) => {
   });
 });
 
+adminSortEl.addEventListener("change", render);
+
 function render() {
   const visible = getVisibleSongs();
 
@@ -244,7 +261,10 @@ function render() {
     row.className = "admin-row";
     row.innerHTML = `
       <input type="checkbox" class="f-select">
-      <input type="text" class="f-title" value="">
+      <div class="f-title-wrap">
+        <span class="song-badge f-badge"></span>
+        <input type="text" class="f-title" value="">
+      </div>
       <input type="text" class="f-artist" value="">
       <div class="f-diff"></div>
       <div class="f-tags"></div>
@@ -255,6 +275,7 @@ function render() {
     const titleInput = row.querySelector(".f-title");
     const artistInput = row.querySelector(".f-artist");
     const notesInput = row.querySelector(".f-notes");
+    const badgeEl = row.querySelector(".f-badge");
     selectInput.checked = selectedIds.has(song.id);
     selectInput.addEventListener("change", () => {
       if (selectInput.checked) selectedIds.add(song.id);
@@ -264,6 +285,13 @@ function render() {
     artistInput.value = song.artist;
     notesInput.value = getNotes(song.tags).join(", ");
 
+    function updateBadge() {
+      const category = getCategoryTag(song.tags);
+      badgeEl.textContent = category;
+      badgeEl.style.display = category ? "" : "none";
+    }
+    updateBadge();
+
     const diffWidget = createStarInput(song.difficulty || 0, (v) => {
       song.difficulty = v;
       save();
@@ -272,6 +300,7 @@ function render() {
 
     const tagWidget = createTagSelector(TAG_OPTIONS, "태그 선택", song.tags, (catTags) => {
       song.tags = [...song.tags.filter((t) => !TAG_OPTIONS.includes(t)), ...catTags];
+      updateBadge();
       save();
     });
     row.querySelector(".f-tags").appendChild(tagWidget.el);

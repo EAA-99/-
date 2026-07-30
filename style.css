@@ -308,6 +308,22 @@ button.danger {
   font-size: 0.9rem;
 }
 
+.f-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.f-title-wrap .f-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.f-badge {
+  flex-shrink: 0;
+}
+
 .tag-select {
   position: relative;
 }

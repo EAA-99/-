@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>노래책 관리자</title>
-<link rel="stylesheet" href="style.css?v=12">
+<link rel="stylesheet" href="style.css?v=13">
 </head>
 <body>
 <div class="wrap" id="gate-view">
@@ -44,6 +44,7 @@
   </div>
 
   <div class="admin-row new-row">
+    <div></div>
     <input type="text" id="new-title" placeholder="제목">
     <input type="text" id="new-artist" placeholder="가수">
     <div id="new-diff"></div>
@@ -54,12 +55,17 @@
 
   <input type="text" id="admin-search" class="search-box" placeholder="목록에서 곡 찾기..." autocomplete="off">
 
+  <div class="toolbar">
+    <button id="select-all-btn">전체 선택</button>
+    <button id="delete-selected-btn" class="danger">선택 삭제</button>
+  </div>
+
   <div class="admin-list" id="admin-list"></div>
 
   <p class="status" id="status"></p>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="admin.js?v=9"></script>
+<script src="admin.js?v=11"></script>
 </body>
 </html>

@@ -14,6 +14,7 @@ const searchEl = document.getElementById("admin-search");
 const cfgStatusEl = document.getElementById("cfg-status");
 
 let songs = [];
+let selectedIds = new Set();
 
 function unlock() {
   gateView.style.display = "none";
@@ -228,6 +229,7 @@ function render() {
     const row = document.createElement("div");
     row.className = "admin-row";
     row.innerHTML = `
+      <input type="checkbox" class="f-select">
       <input type="text" class="f-title" value="">
       <input type="text" class="f-artist" value="">
       <div class="f-diff"></div>
@@ -235,9 +237,15 @@ function render() {
       <input type="text" class="f-notes" placeholder="비고 (쉼표로 여러개)">
       <button class="danger">삭제</button>
     `;
+    const selectInput = row.querySelector(".f-select");
     const titleInput = row.querySelector(".f-title");
     const artistInput = row.querySelector(".f-artist");
     const notesInput = row.querySelector(".f-notes");
+    selectInput.checked = selectedIds.has(song.id);
+    selectInput.addEventListener("change", () => {
+      if (selectInput.checked) selectedIds.add(song.id);
+      else selectedIds.delete(song.id);
+    });
     titleInput.value = song.title;
     artistInput.value = song.artist;
     notesInput.value = getNotes(song.tags).join(", ");
@@ -270,6 +278,7 @@ function render() {
     row.querySelector(".danger").addEventListener("click", () => {
       if (!confirm(`"${song.title}" (${song.artist})을(를) 삭제할까요?`)) return;
       songs = songs.filter((s) => s.id !== song.id);
+      selectedIds.delete(song.id);
       save();
       render();
     });
@@ -279,6 +288,34 @@ function render() {
 }
 
 searchEl.addEventListener("input", render);
+
+document.getElementById("select-all-btn").addEventListener("click", () => {
+  const query = searchEl.value.trim().toLowerCase();
+  const visible = query
+    ? songs.filter(
+        (s) => s.title.toLowerCase().includes(query) || s.artist.toLowerCase().includes(query)
+      )
+    : songs;
+  const allSelected = visible.length > 0 && visible.every((s) => selectedIds.has(s.id));
+  if (allSelected) {
+    for (const s of visible) selectedIds.delete(s.id);
+  } else {
+    for (const s of visible) selectedIds.add(s.id);
+  }
+  render();
+});
+
+document.getElementById("delete-selected-btn").addEventListener("click", () => {
+  if (selectedIds.size === 0) {
+    setStatus("선택된 곡이 없습니다.", "error");
+    return;
+  }
+  if (!confirm(`선택한 ${selectedIds.size}곡을 삭제할까요?`)) return;
+  songs = songs.filter((s) => !selectedIds.has(s.id));
+  selectedIds.clear();
+  save();
+  render();
+});
 
 function addSong() {
   const titleEl = document.getElementById("new-title");
@@ -369,11 +406,14 @@ excelFileEl.addEventListener("change", async () => {
 
     for (const sheetName of workbook.SheetNames) {
       const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
-      alert(`[진단] 시트: ${sheetName}\n1행: ${JSON.stringify(rows[0])}\n2행: ${JSON.stringify(rows[1])}\n3행: ${JSON.stringify(rows[2])}`);
+      const shifted = sheetName === "한식" || sheetName === "일식";
+      const artistCol = shifted ? 1 : 2;
+      const titleCol = shifted ? 2 : 3;
+      const noteCol = shifted ? 3 : 4;
       for (let i = 1; i < rows.length; i++) {
-        const artist = String(rows[i][2] || "").trim();
-        const title = String(rows[i][3] || "").trim();
-        const note = String(rows[i][4] || "").trim();
+        const artist = String(rows[i][artistCol] || "").trim();
+        const title = String(rows[i][titleCol] || "").trim();
+        const note = String(rows[i][noteCol] || "").trim();
         if (!artist || !title) continue;
         const tags = note ? [sheetName, note] : [sheetName];
         songs.push({ id: nextId(), title, artist, tags, difficulty: 0 });

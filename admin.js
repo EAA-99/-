@@ -362,8 +362,10 @@ excelFileEl.addEventListener("change", async () => {
       for (let i = 1; i < rows.length; i++) {
         const artist = String(rows[i][2] || "").trim();
         const title = String(rows[i][3] || "").trim();
+        const note = String(rows[i][4] || "").trim();
         if (!artist || !title) continue;
-        songs.push({ id: nextId(), title, artist, tags: [sheetName], difficulty: 0 });
+        const tags = note ? [sheetName, note] : [sheetName];
+        songs.push({ id: nextId(), title, artist, tags, difficulty: 0 });
         added++;
       }
     }

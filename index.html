@@ -4,10 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>노래책</title>
-<link rel="stylesheet" href="style.css?v=20">
+<link rel="stylesheet" href="style.css?v=22">
 </head>
 <body>
-<div class="wrap">
+
+<div class="wrap" id="view-mode">
   <h1>🎤 노래책</h1>
   <div class="search-row">
     <input type="text" id="search" class="search-box" placeholder="가수 또는 제목 검색..." autocomplete="off">
@@ -25,26 +26,92 @@
   </div>
   <p class="count" id="count"></p>
   <ul class="song-list" id="song-list"></ul>
-  <a class="admin-link" href="admin.html">관리자</a>
+  <a class="admin-link" href="#" id="open-admin-link">관리자</a>
 </div>
 
-<button id="quick-add-btn" class="fab">+</button>
-
-<div id="quick-add-modal" class="modal-overlay" hidden>
-  <div class="modal-card">
-    <h2 class="modal-title">곡 추가</h2>
-    <div class="quick-add-row">
-      <input type="text" id="qa-title" placeholder="제목">
-      <input type="text" id="qa-artist" placeholder="가수">
-      <div id="qa-diff"></div>
-      <div id="qa-tags"></div>
-      <input type="text" id="qa-notes" placeholder="비고 (쉼표로 여러개)">
-      <button class="primary" id="qa-submit-btn">추가</button>
-    </div>
-    <p class="status" id="qa-status"></p>
+<div class="wrap" id="admin-gate" style="display:none">
+  <div class="gate">
+    <h1>🔒 관리자 로그인</h1>
+    <input type="password" id="password" placeholder="비밀번호">
+    <p class="error" id="gate-error"></p>
+    <button class="primary" id="unlock-btn">입장</button>
+    <button id="cancel-gate-btn">취소</button>
   </div>
 </div>
 
-<script src="script.js?v=6"></script>
+<div class="wrap" id="admin-mode" style="display:none">
+  <a class="admin-link" href="#" id="back-to-view-link">← 목록으로 돌아가기</a>
+  <h1>🎤 노래책 관리자</h1>
+  <p class="subtitle">곡을 수정하고 "GitHub에 저장"을 누르면 잠시 후 실제 사이트에 반영돼요.</p>
+
+  <details class="settings" id="settings-box">
+    <summary>GitHub 연동 설정</summary>
+    <div class="settings-grid">
+      <label>계정/조직명<input type="text" id="cfg-owner" placeholder="예: mystream"></label>
+      <label>저장소 이름<input type="text" id="cfg-repo" placeholder="예: 노래책"></label>
+      <label>브랜치<input type="text" id="cfg-branch" placeholder="main"></label>
+      <label>토큰 (Fine-grained PAT)<input type="password" id="cfg-token" placeholder="github_pat_..."></label>
+    </div>
+    <button id="save-cfg-btn">설정 저장</button>
+    <p class="status" id="cfg-status"></p>
+  </details>
+
+  <div class="toolbar">
+    <button id="github-save-btn" class="primary">GitHub에 저장</button>
+    <button id="excel-import-btn">엑셀로 곡 추가</button>
+    <button id="export-btn">JSON 내보내기</button>
+    <button id="import-btn">JSON 불러오기</button>
+    <button id="reset-btn">songs.json에서 다시 불러오기</button>
+    <input type="file" id="import-file" accept="application/json" style="display:none">
+    <input type="file" id="excel-import-file" accept=".xlsx,.xls" style="display:none">
+  </div>
+
+  <div class="admin-row new-row">
+    <div></div>
+    <input type="text" id="new-title" placeholder="제목">
+    <input type="text" id="new-artist" placeholder="가수">
+    <div id="new-diff"></div>
+    <div id="new-tags"></div>
+    <input type="text" id="new-notes" placeholder="비고 (쉼표로 여러개)">
+    <button class="primary" id="add-btn">추가</button>
+  </div>
+
+  <input type="text" id="admin-search" class="search-box" placeholder="목록에서 곡 찾기..." autocomplete="off">
+
+  <select id="admin-sort-select" class="sort-select">
+    <option value="artist">가수이름순</option>
+    <option value="difficulty">숙련도순</option>
+    <option value="title">가나다순</option>
+  </select>
+
+  <div class="tag-tabs" id="admin-tag-tabs">
+    <button class="tag-tab active" data-tag="">전체</button>
+    <button class="tag-tab" data-tag="양식">양식</button>
+    <button class="tag-tab" data-tag="일식">일식</button>
+    <button class="tag-tab" data-tag="한식">한식</button>
+  </div>
+
+  <div class="toolbar">
+    <button id="select-all-btn">전체 선택</button>
+    <button id="delete-selected-btn" class="danger">선택 삭제</button>
+  </div>
+
+  <div class="admin-row admin-header">
+    <div></div>
+    <div>제목</div>
+    <div>가수</div>
+    <div>숙련도</div>
+    <div>태그</div>
+    <div>비고</div>
+    <div></div>
+  </div>
+
+  <div class="admin-list" id="admin-list"></div>
+
+  <p class="status" id="status"></p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="script.js?v=7"></script>
 </body>
 </html>

@@ -257,30 +257,6 @@ h1 {
 
 /* Admin page */
 
-.gate {
-  max-width: 320px;
-  margin: 20vh auto 0;
-  text-align: center;
-}
-
-.gate input {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  font-size: 1rem;
-  margin-top: 12px;
-}
-
-.gate .error {
-  color: var(--danger);
-  font-size: 0.85rem;
-  margin-top: 8px;
-  min-height: 1.2em;
-}
-
 button {
   font-family: inherit;
   cursor: pointer;
@@ -319,6 +295,16 @@ button.danger {
 .icon-btn:hover {
   background: var(--accent-dim);
   filter: none;
+}
+
+.icon-btn.danger {
+  background: transparent;
+  color: var(--text-dim);
+}
+
+.icon-btn.danger:hover {
+  background: var(--danger);
+  color: #fff;
 }
 
 .toolbar {
@@ -523,20 +509,29 @@ button.danger {
   margin-bottom: 16px;
 }
 
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.page-header h1 {
+  margin: 0;
+}
+
 .fab {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  width: 44px;
-  height: 44px;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
   padding: 0;
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--accent);
   color: #1a0a12;
-  font-size: 1.6rem;
+  font-size: 1.4rem;
   font-weight: 700;
   line-height: 1;
-  z-index: 50;
 }
 
 .modal-overlay {

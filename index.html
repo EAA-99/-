@@ -4,12 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>노래책</title>
-<link rel="stylesheet" href="style.css?v=24">
+<link rel="stylesheet" href="style.css?v=25">
 </head>
 <body>
 
 <div class="wrap" id="view-mode">
-  <h1>🎤 노래책</h1>
+  <div class="page-header">
+    <h1>🎤 노래책</h1>
+    <button id="quick-add-btn" class="fab">+</button>
+  </div>
   <div class="search-row">
     <input type="text" id="search" class="search-box" placeholder="가수 또는 제목 검색..." autocomplete="off">
     <select id="sort-select" class="sort-select">
@@ -98,8 +101,6 @@
     <p class="status" id="status"></p>
   </details>
 </div>
-
-<button id="quick-add-btn" class="fab">+</button>
 
 <div id="quick-add-modal" class="modal-overlay" hidden>
   <div class="modal-card">

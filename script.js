@@ -332,8 +332,18 @@ function sortSongs(items) {
   return sorted;
 }
 
+function updateTagCounts() {
+  document.querySelectorAll("#tag-tabs .tag-tab").forEach((btn) => {
+    const tag = btn.dataset.tag;
+    const count = tag === "" ? songs.length : songs.filter((s) => getTags(s).includes(tag)).length;
+    const countEl = btn.querySelector(".tag-count");
+    if (countEl) countEl.textContent = count;
+  });
+}
+
 function applyFilters() {
   renderView(sortSongs(filterSongs()));
+  updateTagCounts();
 }
 
 searchEl.addEventListener("input", applyFilters);

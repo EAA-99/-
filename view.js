@@ -116,8 +116,25 @@ function sortSongs(items) {
   return sorted;
 }
 
+function updateTagCounts() {
+  document.querySelectorAll("#tag-tabs .tag-tab").forEach((btn) => {
+    const tag = btn.dataset.tag;
+    let count;
+    if (tag === "__favorites__") {
+      count = songs.filter((s) => likedIds.has(s.id)).length;
+    } else if (tag === "") {
+      count = songs.length;
+    } else {
+      count = songs.filter((s) => getTags(s).includes(tag)).length;
+    }
+    const countEl = btn.querySelector(".tag-count");
+    if (countEl) countEl.textContent = count;
+  });
+}
+
 function applyFilters() {
   render(sortSongs(filterSongs()));
+  updateTagCounts();
 }
 
 searchEl.addEventListener("input", applyFilters);

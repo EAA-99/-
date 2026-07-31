@@ -218,75 +218,63 @@ async function updateSongsOnGithub(mutate, message, attempts = 3) {
   throw lastError;
 }
 
-// ===== 태그 선택기 / 별점 위젯 (팝업, 관리자 도구 공용) =====
-function closeAllTagDropdowns(except) {
-  document.querySelectorAll(".tag-dropdown").forEach((d) => {
-    if (d !== except) d.hidden = true;
-  });
-}
-
-document.addEventListener("click", (e) => {
-  if (!e.target.closest(".tag-select")) closeAllTagDropdowns();
-});
-
-function createTagSelector(options, placeholder, initialTags, onChange) {
-  let selected = new Set((initialTags || []).filter((t) => options.includes(t)));
-  const wrap = document.createElement("div");
-  wrap.className = "tag-select";
+// ===== 장르 선택기 / 별점 위젯 (팝업, 관리자 도구 공용) =====
+function createGenreSelector(container, options, initialValue, placeholder, onChange) {
+  let value = (initialValue || []).find((t) => options.includes(t)) || "";
 
   const trigger = document.createElement("button");
   trigger.type = "button";
-  trigger.className = "tag-select-trigger";
-  wrap.appendChild(trigger);
+  trigger.className = "sort-select-trigger";
+  container.appendChild(trigger);
 
   const dropdown = document.createElement("div");
-  dropdown.className = "tag-dropdown";
+  dropdown.className = "sort-dropdown";
   dropdown.hidden = true;
-  wrap.appendChild(dropdown);
+  container.appendChild(dropdown);
 
   function updateTrigger() {
-    const list = Array.from(selected);
-    trigger.textContent = list.length ? list.join(", ") : placeholder;
-    trigger.classList.toggle("has-tags", list.length > 0);
+    trigger.innerHTML = `<span>${value || placeholder}</span><span class="chevron">▾</span>`;
   }
 
-  for (const tag of options) {
-    const option = document.createElement("label");
-    option.className = "tag-option";
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.checked = selected.has(tag);
-    checkbox.addEventListener("change", () => {
-      if (checkbox.checked) selected.add(tag);
-      else selected.delete(tag);
-      updateTrigger();
-      if (onChange) onChange(Array.from(selected));
+  function updateActive() {
+    dropdown.querySelectorAll(".sort-option").forEach((btn, i) => {
+      btn.classList.toggle("active", options[i] === value);
     });
-    const label = document.createElement("span");
-    label.textContent = tag;
-    option.appendChild(checkbox);
-    option.appendChild(label);
-    dropdown.appendChild(option);
+  }
+
+  for (const opt of options) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "sort-option";
+    btn.textContent = opt;
+    btn.addEventListener("click", () => {
+      value = value === opt ? "" : opt;
+      updateTrigger();
+      updateActive();
+      dropdown.hidden = true;
+      if (onChange) onChange(value);
+    });
+    dropdown.appendChild(btn);
   }
 
   trigger.addEventListener("click", (e) => {
     e.stopPropagation();
-    const willOpen = dropdown.hidden;
-    closeAllTagDropdowns();
-    dropdown.hidden = !willOpen;
+    dropdown.hidden = !dropdown.hidden;
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!container.contains(e.target)) dropdown.hidden = true;
   });
 
   updateTrigger();
+  updateActive();
 
   return {
-    el: wrap,
-    getValue: () => Array.from(selected),
+    getValue: () => (value ? [value] : []),
     setValue: (tags) => {
-      selected = new Set((tags || []).filter((t) => options.includes(t)));
-      dropdown.querySelectorAll("input[type=checkbox]").forEach((checkbox, i) => {
-        checkbox.checked = selected.has(options[i]);
-      });
+      value = (tags || []).find((t) => options.includes(t)) || "";
       updateTrigger();
+      updateActive();
     },
   };
 }
@@ -489,8 +477,7 @@ fetch(`songs.json?t=${Date.now()}`, { cache: "no-store" })
 const qaDiffWidget = createStarInput(3, null);
 document.getElementById("qa-diff").appendChild(qaDiffWidget.el);
 
-const qaTagsWidget = createTagSelector(TAG_OPTIONS, "태그 선택", [], null);
-document.getElementById("qa-tags").appendChild(qaTagsWidget.el);
+const qaTagsWidget = createGenreSelector(document.getElementById("qa-tags"), TAG_OPTIONS, [], "장르 선택", null);
 
 const qaModalTitleEl = document.getElementById("qa-modal-title");
 let editingSongId = null;

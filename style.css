@@ -152,11 +152,20 @@ h1 {
 .tag-tabs {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
   margin-top: 12px;
 }
 
+.tag-tabs::-webkit-scrollbar {
+  display: none;
+}
+
 .tag-tab {
+  flex-shrink: 0;
+  white-space: nowrap;
   border-radius: 999px;
   background: var(--surface);
   color: var(--text-dim);

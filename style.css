@@ -393,6 +393,7 @@ button.danger {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  margin-top: 12px;
   margin-bottom: 16px;
 }
 

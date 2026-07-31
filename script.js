@@ -7,7 +7,6 @@ let songs = [];
 // ===== 보기 모드 DOM =====
 const listEl = document.getElementById("song-list");
 const searchEl = document.getElementById("search");
-const countEl = document.getElementById("count");
 
 function createSortSelector(container, options, initialValue, onChange) {
   let value = initialValue;
@@ -367,8 +366,6 @@ function renderView(items) {
       listEl.appendChild(li);
     }
   }
-
-  countEl.textContent = `총 ${items.length}곡`;
 }
 
 let activeTag = "";

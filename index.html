@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>노래책</title>
-<link rel="stylesheet" href="style.css?v=35">
+<link rel="stylesheet" href="style.css?v=36">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <meta name="theme-color" content="#ff6fa5">
@@ -27,14 +27,12 @@
       <button class="tag-tab" data-tag="일식">일식<span class="tag-count"></span></button>
       <button class="tag-tab" data-tag="양식">양식<span class="tag-count"></span></button>
     </div>
-
-    <div class="toolbar">
-      <button id="view-select-all-btn">전체 선택</button>
-      <button id="view-delete-selected-btn" class="danger">선택 삭제</button>
-    </div>
   </div>
 
-  <p class="count" id="count"></p>
+  <div class="toolbar">
+    <button id="view-select-all-btn">전체 선택</button>
+    <button id="view-delete-selected-btn" class="danger">선택 삭제</button>
+  </div>
   <ul class="song-list" id="song-list"></ul>
 
   <details id="admin-tools">
@@ -85,6 +83,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="script.js?v=21"></script>
+<script src="script.js?v=22"></script>
 </body>
 </html>

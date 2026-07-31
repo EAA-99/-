@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>노래책</title>
-<link rel="stylesheet" href="style.css?v=37">
+<link rel="stylesheet" href="style.css?v=38">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <meta name="theme-color" content="#ff6fa5">
@@ -77,12 +77,27 @@
 <div id="quick-add-modal" class="modal-overlay" hidden>
   <div class="modal-card">
     <h2 class="modal-title" id="qa-modal-title">곡 추가</h2>
-    <div class="quick-add-row">
-      <input type="text" id="qa-title" placeholder="제목">
-      <input type="text" id="qa-artist" placeholder="가수">
-      <div id="qa-diff"></div>
-      <div id="qa-tags"></div>
-      <input type="text" id="qa-notes" placeholder="비고 (쉼표로 여러개)">
+    <div class="quick-add-grid">
+      <label class="quick-add-field">
+        <span class="field-label">제목</span>
+        <input type="text" id="qa-title" placeholder="제목">
+      </label>
+      <label class="quick-add-field">
+        <span class="field-label">가수</span>
+        <input type="text" id="qa-artist" placeholder="가수">
+      </label>
+      <div class="quick-add-field">
+        <span class="field-label">장르</span>
+        <div id="qa-tags"></div>
+      </div>
+      <div class="quick-add-field">
+        <span class="field-label">숙련도</span>
+        <div id="qa-diff"></div>
+      </div>
+      <label class="quick-add-field quick-add-field-full">
+        <span class="field-label">비고</span>
+        <input type="text" id="qa-notes" placeholder="비고 (쉼표로 여러개)">
+      </label>
     </div>
     <div class="modal-actions">
       <button class="primary" id="qa-submit-btn">저장</button>

@@ -583,22 +583,43 @@ button.danger {
   font-size: 0.95rem;
 }
 
-.quick-add-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
+.quick-add-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 4px 0 4px;
 }
 
-.quick-add-row input[type="text"] {
-  flex: 1;
-  min-width: 120px;
-  padding: 8px 10px;
-  border-radius: 6px;
+.quick-add-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.quick-add-field-full {
+  grid-column: 1 / -1;
+}
+
+.field-label {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.quick-add-field input[type="text"] {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--bg);
   color: var(--text);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+}
+
+.quick-add-field .tag-select-trigger {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
 }
 
 .modal-actions {

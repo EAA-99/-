@@ -578,6 +578,11 @@ button.danger {
   font-size: 1.1rem;
 }
 
+.confirm-message {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
 .quick-add-row {
   display: flex;
   flex-wrap: wrap;

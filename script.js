@@ -86,6 +86,32 @@ const qaTitleEl = document.getElementById("qa-title");
 const qaArtistEl = document.getElementById("qa-artist");
 const qaNotesEl = document.getElementById("qa-notes");
 
+// ===== 삭제 확인 팝업 DOM =====
+const confirmModal = document.getElementById("confirm-modal");
+const confirmMessageEl = document.getElementById("confirm-message");
+const confirmOkBtn = document.getElementById("confirm-ok-btn");
+const confirmCancelBtn = document.getElementById("confirm-cancel-btn");
+
+function confirmDialog(message) {
+  confirmMessageEl.textContent = message;
+  confirmModal.hidden = false;
+  return new Promise((resolve) => {
+    function cleanup(result) {
+      confirmModal.hidden = true;
+      confirmOkBtn.removeEventListener("click", onOk);
+      confirmCancelBtn.removeEventListener("click", onCancel);
+      confirmModal.removeEventListener("click", onOverlay);
+      resolve(result);
+    }
+    function onOk() { cleanup(true); }
+    function onCancel() { cleanup(false); }
+    function onOverlay(e) { if (e.target === confirmModal) cleanup(false); }
+    confirmOkBtn.addEventListener("click", onOk);
+    confirmCancelBtn.addEventListener("click", onCancel);
+    confirmModal.addEventListener("click", onOverlay);
+  });
+}
+
 // ===== 공통 헬퍼 =====
 function getTags(song) {
   return song.tags || (song.tag ? [song.tag] : []);
@@ -303,7 +329,7 @@ function starsHtml(value) {
 }
 
 async function quickDeleteSong(song) {
-  if (!confirm(`"${song.title}" (${song.artist})을(를) 삭제할까요?`)) return;
+  if (!(await confirmDialog(`"${song.title}" (${song.artist})을(를) 삭제할까요?`))) return;
   try {
     songs = await updateSongsOnGithub(
       (current) => current.filter((s) => s.id !== song.id),
@@ -435,7 +461,7 @@ document.getElementById("view-delete-selected-btn").addEventListener("click", as
     alert("선택된 곡이 없습니다.");
     return;
   }
-  if (!confirm(`선택한 ${viewSelectedIds.size}곡을 삭제할까요?`)) return;
+  if (!(await confirmDialog(`선택한 ${viewSelectedIds.size}곡을 삭제할까요?`))) return;
   try {
     songs = await updateSongsOnGithub(
       (current) => current.filter((s) => !viewSelectedIds.has(s.id)),
@@ -512,6 +538,7 @@ quickAddModal.addEventListener("click", (e) => {
 
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && !quickAddModal.hidden) closeQuickAddModal();
+  if (e.key === "Escape" && !confirmModal.hidden) confirmCancelBtn.click();
 });
 
 document.getElementById("qa-submit-btn").addEventListener("click", async () => {

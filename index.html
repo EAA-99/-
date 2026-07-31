@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>노래책</title>
-<link rel="stylesheet" href="style.css?v=36">
+<link rel="stylesheet" href="style.css?v=37">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <meta name="theme-color" content="#ff6fa5">
@@ -64,6 +64,16 @@
   </details>
 </div>
 
+<div id="confirm-modal" class="modal-overlay" hidden>
+  <div class="modal-card">
+    <p class="confirm-message" id="confirm-message"></p>
+    <div class="modal-actions">
+      <button class="danger" id="confirm-ok-btn">삭제</button>
+      <button id="confirm-cancel-btn">취소</button>
+    </div>
+  </div>
+</div>
+
 <div id="quick-add-modal" class="modal-overlay" hidden>
   <div class="modal-card">
     <h2 class="modal-title" id="qa-modal-title">곡 추가</h2>
@@ -83,6 +93,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="script.js?v=22"></script>
+<script src="script.js?v=23"></script>
 </body>
 </html>

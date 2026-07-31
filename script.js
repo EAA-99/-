@@ -7,8 +7,73 @@ let songs = [];
 // ===== 보기 모드 DOM =====
 const listEl = document.getElementById("song-list");
 const searchEl = document.getElementById("search");
-const sortEl = document.getElementById("sort-select");
 const countEl = document.getElementById("count");
+
+function createSortSelector(container, options, initialValue, onChange) {
+  let value = initialValue;
+
+  const trigger = document.createElement("button");
+  trigger.type = "button";
+  trigger.className = "sort-select-trigger";
+  container.appendChild(trigger);
+
+  const dropdown = document.createElement("div");
+  dropdown.className = "sort-dropdown";
+  dropdown.hidden = true;
+  container.appendChild(dropdown);
+
+  function updateTrigger() {
+    const opt = options.find((o) => o.value === value);
+    trigger.innerHTML = `<span>${opt ? opt.label : ""}</span><span class="chevron">▾</span>`;
+  }
+
+  function updateActive() {
+    dropdown.querySelectorAll(".sort-option").forEach((btn, i) => {
+      btn.classList.toggle("active", options[i].value === value);
+    });
+  }
+
+  for (const opt of options) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "sort-option";
+    btn.textContent = opt.label;
+    btn.addEventListener("click", () => {
+      value = opt.value;
+      updateTrigger();
+      updateActive();
+      dropdown.hidden = true;
+      if (onChange) onChange();
+    });
+    dropdown.appendChild(btn);
+  }
+
+  trigger.addEventListener("click", (e) => {
+    e.stopPropagation();
+    dropdown.hidden = !dropdown.hidden;
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!container.contains(e.target)) dropdown.hidden = true;
+  });
+
+  updateTrigger();
+  updateActive();
+
+  return { getValue: () => value };
+}
+
+const sortWidget = createSortSelector(
+  document.getElementById("sort-select"),
+  [
+    { value: "artist", label: "가수이름순" },
+    { value: "difficulty", label: "숙련도순" },
+    { value: "title", label: "가나다순" },
+    { value: "recent", label: "최근 등록순" },
+  ],
+  "artist",
+  () => applyFilters()
+);
 
 // ===== 관리자 도구 DOM =====
 const statusEl = document.getElementById("status");
@@ -320,11 +385,12 @@ function filterSongs() {
 
 function sortSongs(items) {
   const sorted = [...items];
-  if (sortEl.value === "difficulty") {
+  const sortValue = sortWidget.getValue();
+  if (sortValue === "difficulty") {
     sorted.sort((a, b) => (b.difficulty || 0) - (a.difficulty || 0));
-  } else if (sortEl.value === "title") {
+  } else if (sortValue === "title") {
     sorted.sort((a, b) => a.title.localeCompare(b.title, "ko"));
-  } else if (sortEl.value === "recent") {
+  } else if (sortValue === "recent") {
     sorted.sort((a, b) => b.id - a.id);
   } else {
     sorted.sort((a, b) => a.artist.localeCompare(b.artist, "ko"));
@@ -347,7 +413,6 @@ function applyFilters() {
 }
 
 searchEl.addEventListener("input", applyFilters);
-sortEl.addEventListener("change", applyFilters);
 
 document.querySelectorAll("#tag-tabs .tag-tab").forEach((btn) => {
   btn.addEventListener("click", () => {

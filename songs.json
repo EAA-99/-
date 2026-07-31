@@ -6178,25 +6178,5 @@
       "반숙"
     ],
     "difficulty": 0
-  },
-  {
-    "id": 667,
-    "title": "ㅇ",
-    "artist": "ㅇ",
-    "tags": [
-      "한식",
-      "ㅇ"
-    ],
-    "difficulty": 4.5
-  },
-  {
-    "id": 668,
-    "title": "ㅇㅇ",
-    "artist": "ㅇㅇ",
-    "tags": [
-      "한식",
-      "ㅇㄹ"
-    ],
-    "difficulty": 1
   }
 ]

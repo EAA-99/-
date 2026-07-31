@@ -314,6 +314,10 @@ button.danger {
   color: #fff;
 }
 
+.like-btn {
+  font-size: 1rem;
+}
+
 .toolbar {
   display: flex;
   gap: 8px;

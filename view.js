@@ -1,13 +1,27 @@
 // 시청자 전용 읽기 화면입니다. 편집/삭제 기능은 이 파일에 아예 없습니다.
 
 const TAG_OPTIONS = ["한식", "일식", "양식"];
+const LIKES_KEY = "songbook_likes";
 
 let songs = [];
+let likedIds = loadLikes();
 
 const listEl = document.getElementById("song-list");
 const searchEl = document.getElementById("search");
 const sortEl = document.getElementById("sort-select");
 const countEl = document.getElementById("count");
+
+function loadLikes() {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(LIKES_KEY)) || []);
+  } catch {
+    return new Set();
+  }
+}
+
+function saveLikes() {
+  localStorage.setItem(LIKES_KEY, JSON.stringify(Array.from(likedIds)));
+}
 
 function getTags(song) {
   return song.tags || (song.tag ? [song.tag] : []);
@@ -35,6 +49,7 @@ function render(items) {
     for (const song of items) {
       const category = getCategoryTag(song);
       const notes = getNoteTags(song);
+      const liked = likedIds.has(song.id);
       const li = document.createElement("li");
       li.className = "song-item";
       li.innerHTML = `
@@ -47,6 +62,7 @@ function render(items) {
         </div>
         <div class="song-side">
           ${song.difficulty ? starsHtml(song.difficulty) : ""}
+          <button class="icon-btn like-btn" title="좋아요">${liked ? "❤️" : "🤍"}</button>
           <div class="song-tags"></div>
         </div>
       `;
@@ -60,6 +76,12 @@ function render(items) {
         span.textContent = tag;
         tagsEl.appendChild(span);
       }
+      li.querySelector(".like-btn").addEventListener("click", () => {
+        if (likedIds.has(song.id)) likedIds.delete(song.id);
+        else likedIds.add(song.id);
+        saveLikes();
+        applyFilters();
+      });
       listEl.appendChild(li);
     }
   }
@@ -86,6 +108,11 @@ function sortSongs(items) {
     sorted.sort((a, b) => a.title.localeCompare(b.title, "ko"));
   } else if (sortEl.value === "recent") {
     sorted.sort((a, b) => b.id - a.id);
+  } else if (sortEl.value === "likes") {
+    sorted.sort((a, b) => {
+      const diff = (likedIds.has(b.id) ? 1 : 0) - (likedIds.has(a.id) ? 1 : 0);
+      return diff !== 0 ? diff : a.artist.localeCompare(b.artist, "ko");
+    });
   } else {
     sorted.sort((a, b) => a.artist.localeCompare(b.artist, "ko"));
   }

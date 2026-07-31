@@ -97,7 +97,7 @@ function filterSongs() {
   const q = searchEl.value.trim().toLowerCase();
   return songs.filter((s) => {
     const matchesQuery = !q || s.title.toLowerCase().includes(q) || s.artist.toLowerCase().includes(q);
-    const matchesTag = !activeTag || getTags(s).includes(activeTag);
+    const matchesTag = activeTag === "__favorites__" ? likedIds.has(s.id) : !activeTag || getTags(s).includes(activeTag);
     return matchesQuery && matchesTag;
   });
 }
@@ -110,11 +110,6 @@ function sortSongs(items) {
     sorted.sort((a, b) => a.title.localeCompare(b.title, "ko"));
   } else if (sortEl.value === "recent") {
     sorted.sort((a, b) => b.id - a.id);
-  } else if (sortEl.value === "likes") {
-    sorted.sort((a, b) => {
-      const diff = (likedIds.has(b.id) ? 1 : 0) - (likedIds.has(a.id) ? 1 : 0);
-      return diff !== 0 ? diff : a.artist.localeCompare(b.artist, "ko");
-    });
   } else {
     sorted.sort((a, b) => a.artist.localeCompare(b.artist, "ko"));
   }

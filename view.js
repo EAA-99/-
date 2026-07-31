@@ -61,8 +61,10 @@ function render(items) {
           <div class="song-artist"></div>
         </div>
         <div class="song-side">
-          ${song.difficulty ? starsHtml(song.difficulty) : ""}
-          <button class="icon-btn like-btn" title="좋아요">${liked ? "❤️" : "🤍"}</button>
+          <div class="song-meta-row">
+            ${song.difficulty ? starsHtml(song.difficulty) : ""}
+            <button class="icon-btn like-btn" title="즐겨찾기">${liked ? "❤️" : "🤍"}</button>
+          </div>
           <div class="song-tags"></div>
         </div>
       `;

@@ -205,6 +205,12 @@ h1 {
   flex-shrink: 0;
 }
 
+.song-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .song-tags {
   display: flex;
   gap: 4px;

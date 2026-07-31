@@ -6181,12 +6181,13 @@
   },
   {
     "id": 667,
-    "title": "ㅇㄹ",
-    "artist": "ㅇㅇ",
+    "title": "ㅇㄹㅇㄹ",
+    "artist": "ㅇㅇㅇㄹ",
     "tags": [
       "일식",
-      "ㅇㅇ"
+      "ㅇㅇ",
+      "ㅇㄹ"
     ],
-    "difficulty": 3
+    "difficulty": 1
   }
 ]

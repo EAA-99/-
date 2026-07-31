@@ -4,29 +4,31 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>노래책</title>
-<link rel="stylesheet" href="style.css?v=32">
+<link rel="stylesheet" href="style.css?v=33">
 </head>
 <body>
 
 <div class="wrap">
-  <div class="page-header">
-    <h1>🎤 노래책</h1>
-  </div>
-  <div class="search-row">
-    <input type="text" id="search" class="search-box" placeholder="가수 또는 제목 검색..." autocomplete="off">
-    <select id="sort-select" class="sort-select">
-      <option value="artist">가수이름순</option>
-      <option value="difficulty">숙련도순</option>
-      <option value="title">가나다순</option>
-      <option value="recent">최근 등록순</option>
-    </select>
-  </div>
-  <div class="tag-tabs" id="tag-tabs">
-    <button class="tag-tab active" data-tag="">전체</button>
-    <button class="tag-tab" data-tag="한식">한식</button>
-    <button class="tag-tab" data-tag="일식">일식</button>
-    <button class="tag-tab" data-tag="양식">양식</button>
-    <button class="tag-tab" data-tag="__favorites__">즐겨찾기</button>
+  <div class="sticky-header">
+    <div class="page-header">
+      <h1>🎤 노래책</h1>
+    </div>
+    <div class="search-row">
+      <input type="text" id="search" class="search-box" placeholder="가수 또는 제목 검색..." autocomplete="off">
+      <select id="sort-select" class="sort-select">
+        <option value="artist">가수이름순</option>
+        <option value="difficulty">숙련도순</option>
+        <option value="title">가나다순</option>
+        <option value="recent">최근 등록순</option>
+      </select>
+    </div>
+    <div class="tag-tabs" id="tag-tabs">
+      <button class="tag-tab active" data-tag="">전체</button>
+      <button class="tag-tab" data-tag="한식">한식</button>
+      <button class="tag-tab" data-tag="일식">일식</button>
+      <button class="tag-tab" data-tag="양식">양식</button>
+      <button class="tag-tab" data-tag="__favorites__">즐겨찾기</button>
+    </div>
   </div>
   <p class="count" id="count"></p>
   <ul class="song-list" id="song-list"></ul>

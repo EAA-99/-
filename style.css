@@ -449,6 +449,15 @@ button.danger {
   font-size: 0.9rem;
 }
 
+.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--bg);
+  padding-top: 16px;
+  padding-bottom: 8px;
+}
+
 .page-header {
   display: flex;
   align-items: center;

@@ -107,9 +107,6 @@ h1 {
   flex-direction: column;
   gap: 2px;
   padding: 6px;
-  max-height: 180px;
-  overflow-y: auto;
-  overscroll-behavior: contain;
   background: var(--surface-hover);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -683,12 +680,15 @@ button.danger {
 .modal-card {
   width: 100%;
   max-width: 760px;
-  max-height: 85vh;
-  overflow-y: auto;
   padding: 16px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
+}
+
+#admin-tools .modal-card {
+  max-height: 85vh;
+  overflow-y: auto;
 }
 
 .modal-title {

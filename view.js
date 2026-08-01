@@ -4,9 +4,11 @@ const TAG_OPTIONS = ["한식", "일식", "양식"];
 const LIKES_KEY = "songbook_likes";
 const VIEW_MODE_KEY = "songbook_view_mode";
 
+const isMobile = window.matchMedia("(max-width: 640px)").matches;
+
 let songs = [];
 let likedIds = loadLikes();
-let viewMode = localStorage.getItem(VIEW_MODE_KEY) === "grid" ? "grid" : "list";
+let viewMode = !isMobile && localStorage.getItem(VIEW_MODE_KEY) === "grid" ? "grid" : "list";
 
 const listEl = document.getElementById("song-list");
 const searchEl = document.getElementById("search");

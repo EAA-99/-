@@ -23,11 +23,17 @@
       <input type="text" id="search" class="search-box" placeholder="가수 또는 제목 검색..." autocomplete="off">
       <div id="sort-select" class="sort-select"></div>
     </div>
-    <div class="tag-tabs" id="tag-tabs">
-      <button class="tag-tab active" data-tag="">전체<span class="tag-count"></span></button>
-      <button class="tag-tab" data-tag="한식">한식<span class="tag-count"></span></button>
-      <button class="tag-tab" data-tag="일식">일식<span class="tag-count"></span></button>
-      <button class="tag-tab" data-tag="양식">양식<span class="tag-count"></span></button>
+    <div class="tag-tabs-row">
+      <div class="tag-tabs" id="tag-tabs">
+        <button class="tag-tab active" data-tag="">전체<span class="tag-count"></span></button>
+        <button class="tag-tab" data-tag="한식">한식<span class="tag-count"></span></button>
+        <button class="tag-tab" data-tag="일식">일식<span class="tag-count"></span></button>
+        <button class="tag-tab" data-tag="양식">양식<span class="tag-count"></span></button>
+      </div>
+      <div class="view-toggle" id="view-toggle">
+        <button type="button" class="view-toggle-btn active" data-view="list" title="목록형">☰</button>
+        <button type="button" class="view-toggle-btn" data-view="grid" title="카드형">▦</button>
+      </div>
     </div>
   </div>
 
@@ -146,6 +152,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="script.js?v=35"></script>
+<script src="script.js?v=36"></script>
 </body>
 </html>

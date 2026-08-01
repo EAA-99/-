@@ -2,8 +2,12 @@
 const GITHUB_CFG_KEY = "songbook_github_cfg";
 const DEFAULT_GITHUB_CFG = { owner: "eaa-99", repo: "-", branch: "main" };
 const TAG_OPTIONS = ["한식", "일식", "양식"];
+const VIEW_MODE_KEY = "songbook_view_mode";
+
+const isMobile = window.matchMedia("(max-width: 640px)").matches;
 
 let songs = [];
+let viewMode = !isMobile && localStorage.getItem(VIEW_MODE_KEY) === "grid" ? "grid" : "list";
 
 // ===== 보기 모드 DOM =====
 const listEl = document.getElementById("song-list");
@@ -386,51 +390,91 @@ function renderView(items) {
 
   if (items.length === 0) {
     listEl.innerHTML = '<li class="empty">검색 결과가 없습니다</li>';
-  } else {
-    for (const song of items) {
-      const category = getCategoryTag(song);
-      const notes = getNoteTags(song);
-      const li = document.createElement("li");
-      li.className = "song-item";
-      li.innerHTML = `
+    return;
+  }
+
+  const grouped = sortWidget.getValue() === "artist";
+  const artistCounts = grouped
+    ? items.reduce((acc, s) => ((acc[s.artist] = (acc[s.artist] || 0) + 1), acc), {})
+    : null;
+  let lastArtist = null;
+
+  for (const song of items) {
+    if (grouped && song.artist !== lastArtist) {
+      lastArtist = song.artist;
+      const header = document.createElement("li");
+      header.className = "artist-group";
+      header.innerHTML = `<span class="artist-group-name"></span><span class="artist-group-count"></span>`;
+      header.querySelector(".artist-group-name").textContent = song.artist;
+      header.querySelector(".artist-group-count").textContent = `${artistCounts[song.artist]}곡`;
+      listEl.appendChild(header);
+    }
+
+    const category = getCategoryTag(song);
+    const notes = getNoteTags(song);
+    const li = document.createElement("li");
+    li.className = "song-item";
+    const metaRowHtml = `
+      <div class="song-meta-row">
         <input type="checkbox" class="song-select">
+        ${song.difficulty ? starsHtml(song.difficulty) : ""}
+        <button class="icon-btn danger song-delete" title="삭제">🗑️</button>
+      </div>
+    `;
+    const artistHtml = grouped ? "" : `<div class="song-artist"></div>`;
+    if (viewMode === "grid") {
+      li.innerHTML = `
         <div class="song-main">
           <div class="song-title-row">
-            ${category ? `<span class="song-badge"></span>` : ""}
             <span class="song-title"></span>
           </div>
-          <div class="song-artist"></div>
+          ${artistHtml}
         </div>
         <div class="song-side">
-          ${song.difficulty ? starsHtml(song.difficulty) : ""}
+          ${metaRowHtml}
+          <div class="song-tags">
+            ${category ? `<span class="song-badge"></span>` : ""}
+          </div>
+        </div>
+      `;
+    } else {
+      li.innerHTML = `
+        <div class="song-main">
+          <div class="song-title-row">
+            <span class="song-title"></span>
+          </div>
+          ${artistHtml}
+          ${category ? `<span class="song-badge"></span>` : ""}
+        </div>
+        <div class="song-side">
+          ${metaRowHtml}
           <div class="song-tags"></div>
         </div>
-        <button class="icon-btn danger song-delete" title="삭제">🗑️</button>
       `;
-      if (category) li.querySelector(".song-badge").textContent = category;
-      li.querySelector(".song-title").textContent = song.title;
-      li.querySelector(".song-artist").textContent = song.artist;
-      const tagsEl = li.querySelector(".song-tags");
-      for (const tag of notes) {
-        const span = document.createElement("span");
-        span.className = "song-tag";
-        span.textContent = tag;
-        tagsEl.appendChild(span);
-      }
-      const selectInput = li.querySelector(".song-select");
-      selectInput.checked = viewSelectedIds.has(song.id);
-      selectInput.addEventListener("click", (e) => e.stopPropagation());
-      selectInput.addEventListener("change", () => {
-        if (selectInput.checked) viewSelectedIds.add(song.id);
-        else viewSelectedIds.delete(song.id);
-      });
-      li.querySelector(".song-delete").addEventListener("click", (e) => {
-        e.stopPropagation();
-        quickDeleteSong(song);
-      });
-      li.addEventListener("click", () => openEditModal(song));
-      listEl.appendChild(li);
     }
+    if (category) li.querySelector(".song-badge").textContent = category;
+    li.querySelector(".song-title").textContent = song.title;
+    if (!grouped) li.querySelector(".song-artist").textContent = song.artist;
+    const tagsEl = li.querySelector(".song-tags");
+    for (const tag of notes) {
+      const span = document.createElement("span");
+      span.className = "song-tag";
+      span.textContent = tag;
+      tagsEl.appendChild(span);
+    }
+    const selectInput = li.querySelector(".song-select");
+    selectInput.checked = viewSelectedIds.has(song.id);
+    selectInput.addEventListener("click", (e) => e.stopPropagation());
+    selectInput.addEventListener("change", () => {
+      if (selectInput.checked) viewSelectedIds.add(song.id);
+      else viewSelectedIds.delete(song.id);
+    });
+    li.querySelector(".song-delete").addEventListener("click", (e) => {
+      e.stopPropagation();
+      quickDeleteSong(song);
+    });
+    li.addEventListener("click", () => openEditModal(song));
+    listEl.appendChild(li);
   }
 }
 
@@ -484,6 +528,22 @@ document.querySelectorAll("#tag-tabs .tag-tab").forEach((btn) => {
     applyFilters();
   });
 });
+
+function applyViewMode() {
+  listEl.classList.toggle("grid-view", viewMode === "grid");
+  document.querySelectorAll(".view-toggle-btn").forEach((b) => b.classList.toggle("active", b.dataset.view === viewMode));
+}
+
+document.querySelectorAll(".view-toggle-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    viewMode = btn.dataset.view;
+    localStorage.setItem(VIEW_MODE_KEY, viewMode);
+    applyViewMode();
+    applyFilters();
+  });
+});
+
+applyViewMode();
 
 document.getElementById("view-select-all-btn").addEventListener("click", () => {
   const visible = sortSongs(filterSongs());

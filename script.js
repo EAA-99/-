@@ -297,32 +297,66 @@ function createGenreSelector(container, options, initialValue, placeholder, onCh
   };
 }
 
-function createStarInput(initialValue, onChange) {
-  let value = initialValue;
-  const el = document.createElement("div");
-  el.className = "star-input stars";
-  el.innerHTML = `<span class="stars-bg">★★★★★</span><span class="stars-fill">★★★★★</span>`;
-  const fill = el.querySelector(".stars-fill");
+function createStarSelector(container, initialValue, onChange) {
+  let value = Math.max(1, Math.min(5, Math.round(initialValue || 1)));
 
-  function paint() {
-    fill.style.width = `${(value / 5) * 100}%`;
+  function starsLabel(n) {
+    return "★".repeat(n) + "☆".repeat(5 - n);
   }
-  paint();
 
-  el.addEventListener("click", (e) => {
-    const rect = el.getBoundingClientRect();
-    const fraction = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    value = Math.round(fraction * 10) / 2;
-    paint();
-    if (onChange) onChange(value);
+  const trigger = document.createElement("button");
+  trigger.type = "button";
+  trigger.className = "sort-select-trigger";
+  container.appendChild(trigger);
+
+  const dropdown = document.createElement("div");
+  dropdown.className = "sort-dropdown";
+  dropdown.hidden = true;
+  container.appendChild(dropdown);
+
+  function updateTrigger() {
+    trigger.innerHTML = `<span>${starsLabel(value)}</span><span class="chevron">▾</span>`;
+  }
+
+  function updateActive() {
+    dropdown.querySelectorAll(".sort-option").forEach((btn, i) => {
+      btn.classList.toggle("active", i + 1 === value);
+    });
+  }
+
+  for (let n = 1; n <= 5; n++) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "sort-option";
+    btn.textContent = starsLabel(n);
+    btn.addEventListener("click", () => {
+      value = n;
+      updateTrigger();
+      updateActive();
+      dropdown.hidden = true;
+      if (onChange) onChange(value);
+    });
+    dropdown.appendChild(btn);
+  }
+
+  trigger.addEventListener("click", (e) => {
+    e.stopPropagation();
+    dropdown.hidden = !dropdown.hidden;
   });
 
+  document.addEventListener("click", (e) => {
+    if (!container.contains(e.target)) dropdown.hidden = true;
+  });
+
+  updateTrigger();
+  updateActive();
+
   return {
-    el,
     getValue: () => value,
     setValue: (v) => {
-      value = v;
-      paint();
+      value = Math.max(1, Math.min(5, Math.round(v || 1)));
+      updateTrigger();
+      updateActive();
     },
   };
 }
@@ -492,8 +526,7 @@ fetch(`songs.json?t=${Date.now()}`, { cache: "no-store" })
 
 // ===== 곡 추가/수정 팝업 =====
 
-const qaDiffWidget = createStarInput(3, null);
-document.getElementById("qa-diff").appendChild(qaDiffWidget.el);
+const qaDiffWidget = createStarSelector(document.getElementById("qa-diff"), 3, null);
 
 const qaTagsWidget = createGenreSelector(document.getElementById("qa-tags"), TAG_OPTIONS, [], "장르 선택", null);
 

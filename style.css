@@ -434,10 +434,6 @@ h1 {
   color: var(--accent);
 }
 
-.star-input {
-  cursor: pointer;
-}
-
 .empty {
   color: var(--text-dim);
   text-align: center;
@@ -743,16 +739,6 @@ button.danger {
 
 .quick-add-field .sort-select {
   margin-top: 0;
-}
-
-#qa-diff {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 16px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--surface);
 }
 
 .modal-actions {

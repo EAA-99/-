@@ -782,6 +782,17 @@ function arrayBufferToBase64(buffer) {
   return btoa(binary);
 }
 
+// GitHub API는 대표 메시지("Repository creation failed." 등)만 던지고 진짜 원인은
+// errors 배열 안에 따로 담아 보내는 경우가 많아서, 같이 합쳐서 보여줍니다.
+async function githubErrorMessage(res) {
+  const err = await res.json().catch(() => ({}));
+  const detail = (err.errors || [])
+    .map((e) => e.message || e.code)
+    .filter(Boolean)
+    .join(", ");
+  return [err.message, detail].filter(Boolean).join(" — ") || `요청 실패 (${res.status})`;
+}
+
 async function putNewRepoFile(owner, repo, token, path, base64Content, message) {
   const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
     method: "PUT",
@@ -793,8 +804,7 @@ async function putNewRepoFile(owner, repo, token, path, base64Content, message) 
     body: JSON.stringify({ message, content: base64Content, branch: "main" }),
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(`${path} 업로드 실패: ${err.message || res.status}`);
+    throw new Error(`${path} 업로드 실패: ${await githubErrorMessage(res)}`);
   }
 }
 
@@ -831,8 +841,7 @@ document.getElementById("new-site-create-btn").addEventListener("click", async (
       body: JSON.stringify({ name: repoName, private: false, auto_init: true }),
     });
     if (!createRes.ok) {
-      const err = await createRes.json().catch(() => ({}));
-      throw new Error(err.message || `저장소 생성 실패 (${createRes.status})`);
+      throw new Error(`저장소 생성 실패: ${await githubErrorMessage(createRes)}`);
     }
 
     const totalFiles = NEW_SITE_TEXT_FILES.length + NEW_SITE_BINARY_FILES.length + 2;
@@ -871,9 +880,8 @@ document.getElementById("new-site-create-btn").addEventListener("click", async (
       body: JSON.stringify({ build_type: "legacy", source: { branch: "main", path: "/" } }),
     });
     if (!pagesRes.ok && pagesRes.status !== 409) {
-      const err = await pagesRes.json().catch(() => ({}));
       throw new Error(
-        `파일은 다 올라갔지만 Pages 자동 활성화는 실패했어요 (${err.message || pagesRes.status}). ` +
+        `파일은 다 올라갔지만 Pages 자동 활성화는 실패했어요 (${await githubErrorMessage(pagesRes)}). ` +
           `새 저장소의 Settings → Pages에서 branch를 main으로 두고 수동으로 켜주세요.`
       );
     }

@@ -591,6 +591,55 @@ const queueCountEl = document.getElementById("queue-count");
 const queueDrawerEl = document.getElementById("queue-drawer");
 const queueDrawerOverlayEl = document.getElementById("queue-drawer-overlay");
 
+function makeQueueItemDraggable(li) {
+  let startY = null;
+  let dragging = false;
+
+  li.addEventListener("pointerdown", (e) => {
+    if (e.target.closest("button")) return;
+    startY = e.clientY;
+    li.setPointerCapture(e.pointerId);
+  });
+
+  li.addEventListener("pointermove", (e) => {
+    if (startY === null) return;
+    if (!dragging) {
+      if (Math.abs(e.clientY - startY) < 6) return;
+      dragging = true;
+      li.classList.add("dragging");
+    }
+    const siblings = [...queueListEl.children];
+    const liIndex = siblings.indexOf(li);
+    for (let i = 0; i < siblings.length; i++) {
+      const other = siblings[i];
+      if (other === li) continue;
+      const rect = other.getBoundingClientRect();
+      const midY = rect.top + rect.height / 2;
+      if (e.clientY < midY && i < liIndex) {
+        queueListEl.insertBefore(li, other);
+        break;
+      }
+      if (e.clientY > midY && i > liIndex) {
+        queueListEl.insertBefore(li, other.nextSibling);
+        break;
+      }
+    }
+  });
+
+  function endDrag() {
+    if (dragging) {
+      li.classList.remove("dragging");
+      queue = [...queueListEl.children].map((el) => Number(el.dataset.songId));
+      saveQueue();
+    }
+    startY = null;
+    dragging = false;
+  }
+
+  li.addEventListener("pointerup", endDrag);
+  li.addEventListener("pointercancel", endDrag);
+}
+
 function renderQueue() {
   const items = queue.map((id) => songs.find((s) => s.id === id)).filter(Boolean);
   queueCountEl.textContent = items.length;
@@ -599,14 +648,12 @@ function renderQueue() {
     queueListEl.innerHTML = '<li class="empty">대기열이 비어있습니다</li>';
     return;
   }
-  items.forEach((song, i) => {
+  for (const song of items) {
     const li = document.createElement("li");
     li.className = "queue-item";
+    li.dataset.songId = song.id;
     li.innerHTML = `
-      <div class="queue-reorder">
-        <button class="icon-btn queue-up-btn" title="위로"${i === 0 ? " disabled" : ""}>▲</button>
-        <button class="icon-btn queue-down-btn" title="아래로"${i === items.length - 1 ? " disabled" : ""}>▼</button>
-      </div>
+      ${song.mr ? `<button class="icon-btn mr-play-btn" title="MR 재생">▶️</button>` : `<span class="queue-play-spacer"></span>`}
       <div class="queue-item-info">
         <span class="queue-item-title"></span>
         <span class="queue-item-artist"></span>
@@ -615,27 +662,21 @@ function renderQueue() {
     `;
     li.querySelector(".queue-item-title").textContent = song.title;
     li.querySelector(".queue-item-artist").textContent = song.artist;
-    li.querySelector(".queue-up-btn").addEventListener("click", () => {
-      const idx = queue.indexOf(song.id);
-      if (idx <= 0) return;
-      [queue[idx - 1], queue[idx]] = [queue[idx], queue[idx - 1]];
-      saveQueue();
-      renderQueue();
-    });
-    li.querySelector(".queue-down-btn").addEventListener("click", () => {
-      const idx = queue.indexOf(song.id);
-      if (idx === -1 || idx >= queue.length - 1) return;
-      [queue[idx + 1], queue[idx]] = [queue[idx], queue[idx + 1]];
-      saveQueue();
-      renderQueue();
-    });
+    const mrPlayBtn = li.querySelector(".mr-play-btn");
+    if (mrPlayBtn) {
+      mrPlayBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openMrVideo(song.mr);
+      });
+    }
     li.querySelector(".queue-remove-btn").addEventListener("click", () => {
       queue = queue.filter((id) => id !== song.id);
       saveQueue();
       renderQueue();
     });
+    makeQueueItemDraggable(li);
     queueListEl.appendChild(li);
-  });
+  }
 }
 
 function openQueueDrawer() {

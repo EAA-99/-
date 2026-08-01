@@ -582,19 +582,21 @@ button.danger {
   background: var(--song-bg);
   border: 1px solid var(--border);
   border-radius: 8px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
 }
 
-.queue-reorder {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+.queue-item.dragging {
+  opacity: 0.6;
+  cursor: grabbing;
+  border-color: var(--accent);
+}
+
+.queue-play-spacer {
+  display: inline-block;
+  width: 28px;
   flex-shrink: 0;
-}
-
-.queue-reorder .icon-btn {
-  width: 22px;
-  height: 16px;
-  font-size: 0.6rem;
 }
 
 .icon-btn:disabled {

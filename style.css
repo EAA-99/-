@@ -291,10 +291,6 @@ h1 {
   min-width: 0;
 }
 
-.song-delete {
-  flex-shrink: 0;
-}
-
 .song-title-row {
   display: flex;
   align-items: center;
@@ -384,14 +380,6 @@ h1 {
   flex-direction: column-reverse;
   gap: 2px;
   padding-right: 30px;
-  padding-left: 26px;
-}
-
-.grid-view .song-select {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  margin: 0;
 }
 
 .grid-view .song-title {

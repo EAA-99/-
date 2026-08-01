@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>노래책</title>
-<link rel="stylesheet" href="style.css?v=63">
+<link rel="stylesheet" href="style.css?v=65">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <meta name="theme-color" content="#ff6fa5">
@@ -35,12 +35,12 @@
         <button type="button" class="view-toggle-btn" data-view="grid" title="카드형">▦</button>
       </div>
     </div>
+    <div class="toolbar">
+      <button id="view-select-all-btn">전체 선택</button>
+      <button id="view-delete-selected-btn" class="danger">선택 삭제</button>
+    </div>
   </div>
 
-  <div class="toolbar">
-    <button id="view-select-all-btn">전체 선택</button>
-    <button id="view-delete-selected-btn" class="danger">선택 삭제</button>
-  </div>
   <ul class="song-list" id="song-list"></ul>
 </div>
 
@@ -156,6 +156,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="script.js?v=39"></script>
+<script src="script.js?v=41"></script>
 </body>
 </html>

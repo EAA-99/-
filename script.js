@@ -377,19 +377,6 @@ function openMrVideo(url) {
   window.open(url, "_blank", "noopener");
 }
 
-async function quickDeleteSong(song) {
-  if (!(await confirmDialog(`"${song.title}" (${song.artist})을(를) 삭제할까요?`))) return;
-  try {
-    songs = await updateSongsOnGithub(
-      (current) => current.filter((s) => s.id !== song.id),
-      "노래책 곡 삭제"
-    );
-    applyFilters();
-  } catch (e) {
-    alert(`삭제 실패: ${e.message}`);
-  }
-}
-
 function renderView(items) {
   listEl.innerHTML = "";
 
@@ -421,17 +408,16 @@ function renderView(items) {
     li.className = "song-item";
     const metaRowHtml = `
       <div class="song-meta-row">
-        ${song.mr ? `<button class="icon-btn mr-play-btn" title="MR 재생">▶️</button>` : ""}
         ${song.difficulty ? starsHtml(song.difficulty) : ""}
-        <button class="icon-btn danger song-delete" title="삭제">🗑️</button>
+        ${song.mr ? `<button class="icon-btn mr-play-btn" title="MR 재생">▶️</button>` : ""}
       </div>
     `;
     const artistHtml = grouped ? "" : `<div class="song-artist"></div>`;
     if (viewMode === "grid") {
       li.innerHTML = `
-        <input type="checkbox" class="song-select">
         <div class="song-main">
           <div class="song-title-row">
+            <input type="checkbox" class="song-select">
             <span class="song-title"></span>
           </div>
           ${artistHtml}
@@ -475,10 +461,6 @@ function renderView(items) {
     selectInput.addEventListener("change", () => {
       if (selectInput.checked) viewSelectedIds.add(song.id);
       else viewSelectedIds.delete(song.id);
-    });
-    li.querySelector(".song-delete").addEventListener("click", (e) => {
-      e.stopPropagation();
-      quickDeleteSong(song);
     });
     const mrPlayBtn = li.querySelector(".mr-play-btn");
     if (mrPlayBtn) {

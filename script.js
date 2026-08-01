@@ -570,11 +570,78 @@ document.getElementById("view-delete-selected-btn").addEventListener("click", as
   }
 });
 
+// ===== 대기열 (이 브라우저에만 저장, GitHub에는 안 올라감) =====
+const QUEUE_KEY = "songbook_queue";
+let queue = loadQueue();
+
+function loadQueue() {
+  try {
+    return JSON.parse(localStorage.getItem(QUEUE_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
+
+function saveQueue() {
+  localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+}
+
+const queueListEl = document.getElementById("queue-list");
+const queueCountEl = document.getElementById("queue-count");
+
+function renderQueue() {
+  const items = queue.map((id) => songs.find((s) => s.id === id)).filter(Boolean);
+  queueCountEl.textContent = items.length;
+  queueListEl.innerHTML = "";
+  if (items.length === 0) {
+    queueListEl.innerHTML = '<li class="empty">대기열이 비어있습니다</li>';
+    return;
+  }
+  for (const song of items) {
+    const li = document.createElement("li");
+    li.className = "queue-item";
+    li.innerHTML = `
+      <div class="queue-item-info">
+        <span class="queue-item-title"></span>
+        <span class="queue-item-artist"></span>
+      </div>
+      <button class="icon-btn danger queue-remove-btn" title="대기열에서 제거">✕</button>
+    `;
+    li.querySelector(".queue-item-title").textContent = song.title;
+    li.querySelector(".queue-item-artist").textContent = song.artist;
+    li.querySelector(".queue-remove-btn").addEventListener("click", () => {
+      queue = queue.filter((id) => id !== song.id);
+      saveQueue();
+      renderQueue();
+    });
+    queueListEl.appendChild(li);
+  }
+}
+
+document.getElementById("queue-add-btn").addEventListener("click", () => {
+  if (viewSelectedIds.size === 0) {
+    alert("선택된 곡이 없습니다.");
+    return;
+  }
+  for (const id of viewSelectedIds) {
+    if (!queue.includes(id)) queue.push(id);
+  }
+  saveQueue();
+  renderQueue();
+});
+
+document.getElementById("queue-clear-btn").addEventListener("click", () => {
+  queue = [];
+  saveQueue();
+  renderQueue();
+});
+
 fetch(`songs.json?t=${Date.now()}`, { cache: "no-store" })
   .then((res) => res.json())
   .then((data) => {
     songs = data.map(normalizeSong);
     applyFilters();
+    renderQueue();
   })
   .catch(() => {
     listEl.innerHTML = '<li class="empty">노래 목록을 불러오지 못했습니다</li>';

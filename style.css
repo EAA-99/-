@@ -2,6 +2,7 @@
   --bg: #14151a;
   --surface: #1e2027;
   --surface-hover: #262933;
+  --song-bg: #1e2027;
   --border: #33363f;
   --text: #f2f2f5;
   --text-dim: #9a9ca6;
@@ -282,7 +283,7 @@ h1 {
   justify-content: space-between;
   gap: 12px;
   padding: 12px 14px;
-  background: #161c3d;
+  background: var(--song-bg);
   border: 1px solid var(--border);
   border-radius: 10px;
   cursor: pointer;

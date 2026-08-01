@@ -17,6 +17,7 @@ fetch(`settings.json?t=${Date.now()}`, { cache: "no-store" })
   .then((res) => res.json())
   .then((data) => {
     if (data.bgColor) document.documentElement.style.setProperty("--bg", data.bgColor);
+    if (data.songBgColor) document.documentElement.style.setProperty("--song-bg", data.songBgColor);
   })
   .catch(() => {});
 

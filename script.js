@@ -760,24 +760,33 @@ loadGithubConfigIntoForm();
 // --- 배경색 설정 ---
 
 const DEFAULT_BG_COLOR = "#14151a";
+const DEFAULT_SONG_BG_COLOR = "#1e2027";
 const bgColorInput = document.getElementById("bg-color-input");
 const bgColorStatusEl = document.getElementById("bg-color-status");
+const songBgColorInput = document.getElementById("song-bg-color-input");
+const songBgColorStatusEl = document.getElementById("song-bg-color-status");
 
 function applyBgColor(color) {
   document.documentElement.style.setProperty("--bg", color);
 }
 
-async function saveBgColorToGithub(color) {
+function applySongBgColor(color) {
+  document.documentElement.style.setProperty("--song-bg", color);
+}
+
+// settings.json은 배경색/노래 칸 배경색을 함께 담고 있어서, 저장할 때 현재 값을 먼저
+// 읽어와 바뀐 값만 덮어써야 다른 색상 설정이 지워지지 않습니다.
+async function saveSettingToGithub(patch, statusEl) {
   const cfg = getGithubConfig();
   if (!cfg.owner || !cfg.repo || !cfg.token) {
-    bgColorStatusEl.textContent = "먼저 위 'GitHub 연동 설정'을 채워주세요.";
-    bgColorStatusEl.className = "status error";
+    statusEl.textContent = "먼저 위 'GitHub 연동 설정'을 채워주세요.";
+    statusEl.className = "status error";
     document.getElementById("settings-box").open = true;
     return;
   }
 
-  bgColorStatusEl.textContent = "배경색 저장하는 중...";
-  bgColorStatusEl.className = "status";
+  statusEl.textContent = "저장하는 중...";
+  statusEl.className = "status";
   const branch = cfg.branch || "main";
   const apiUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/settings.json`;
   const headers = {
@@ -787,9 +796,12 @@ async function saveBgColorToGithub(color) {
 
   try {
     let sha;
+    let current = {};
     const getRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}`, { headers, cache: "no-store" });
     if (getRes.ok) {
-      sha = (await getRes.json()).sha;
+      const data = await getRes.json();
+      sha = data.sha;
+      current = JSON.parse(base64ToUtf8(data.content));
     } else if (getRes.status !== 404) {
       throw new Error(`파일 조회 실패 (${getRes.status})`);
     }
@@ -798,8 +810,8 @@ async function saveBgColorToGithub(color) {
       method: "PUT",
       headers: { ...headers, "Content-Type": "application/json" },
       body: JSON.stringify({
-        message: "노래책 배경색 변경",
-        content: utf8ToBase64(JSON.stringify({ bgColor: color }, null, 2)),
+        message: "노래책 설정 변경",
+        content: utf8ToBase64(JSON.stringify({ ...current, ...patch }, null, 2)),
         branch,
         ...(sha ? { sha } : {}),
       }),
@@ -810,26 +822,35 @@ async function saveBgColorToGithub(color) {
       throw new Error(err.message || `저장 실패 (${putRes.status})`);
     }
 
-    bgColorStatusEl.textContent = "배경색 저장 완료! 잠시 후 노래책에도 반영됩니다.";
-    bgColorStatusEl.className = "status success";
+    statusEl.textContent = "저장 완료! 잠시 후 노래책에도 반영됩니다.";
+    statusEl.className = "status success";
   } catch (e) {
-    bgColorStatusEl.textContent = `배경색 저장 실패: ${e.message}`;
-    bgColorStatusEl.className = "status error";
+    statusEl.textContent = `저장 실패: ${e.message}`;
+    statusEl.className = "status error";
   }
 }
 
 bgColorInput.addEventListener("input", () => applyBgColor(bgColorInput.value));
-bgColorInput.addEventListener("change", () => saveBgColorToGithub(bgColorInput.value));
+bgColorInput.addEventListener("change", () => saveSettingToGithub({ bgColor: bgColorInput.value }, bgColorStatusEl));
+
+songBgColorInput.addEventListener("input", () => applySongBgColor(songBgColorInput.value));
+songBgColorInput.addEventListener("change", () =>
+  saveSettingToGithub({ songBgColor: songBgColorInput.value }, songBgColorStatusEl)
+);
 
 fetch(`settings.json?t=${Date.now()}`, { cache: "no-store" })
   .then((res) => res.json())
   .then((data) => {
-    const color = data.bgColor || DEFAULT_BG_COLOR;
-    applyBgColor(color);
-    bgColorInput.value = color;
+    const bgColor = data.bgColor || DEFAULT_BG_COLOR;
+    const songBgColor = data.songBgColor || DEFAULT_SONG_BG_COLOR;
+    applyBgColor(bgColor);
+    applySongBgColor(songBgColor);
+    bgColorInput.value = bgColor;
+    songBgColorInput.value = songBgColor;
   })
   .catch(() => {
     bgColorInput.value = DEFAULT_BG_COLOR;
+    songBgColorInput.value = DEFAULT_SONG_BG_COLOR;
   });
 
 if ("serviceWorker" in navigator) {

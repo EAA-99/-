@@ -13,6 +13,13 @@ let viewMode = !isMobile && localStorage.getItem(VIEW_MODE_KEY) === "grid" ? "gr
 const listEl = document.getElementById("song-list");
 const searchEl = document.getElementById("search");
 
+fetch(`settings.json?t=${Date.now()}`, { cache: "no-store" })
+  .then((res) => res.json())
+  .then((data) => {
+    if (data.bgColor) document.documentElement.style.setProperty("--bg", data.bgColor);
+  })
+  .catch(() => {});
+
 function createSortSelector(container, options, initialValue, onChange) {
   let value = initialValue;
 

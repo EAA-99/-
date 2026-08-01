@@ -1,8 +1,8 @@
 :root {
-  --bg: #0e1230;
-  --surface: #171c3d;
-  --surface-hover: #212752;
-  --border: #2d3465;
+  --bg: #14151a;
+  --surface: #1e2027;
+  --surface-hover: #262933;
+  --border: #33363f;
   --text: #f2f2f5;
   --text-dim: #9a9ca6;
   --accent: #ff6fa5;
@@ -544,6 +544,32 @@ button.danger {
 
 .status.error {
   color: var(--danger);
+}
+
+.bg-color-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.bg-color-row label {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.bg-color-row input[type="color"] {
+  width: 44px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: none;
+  cursor: pointer;
+}
+
+.bg-color-row .status {
+  margin-top: 0;
 }
 
 .settings {

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>노래책</title>
-<link rel="stylesheet" href="style.css?v=50">
+<link rel="stylesheet" href="style.css?v=51">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <meta name="theme-color" content="#ff6fa5">
@@ -37,6 +37,12 @@
 
   <details id="admin-tools">
     <summary>관리자 도구</summary>
+
+    <div class="bg-color-row">
+      <label for="bg-color-input">배경색</label>
+      <input type="color" id="bg-color-input" value="#14151a">
+      <p class="status" id="bg-color-status"></p>
+    </div>
 
     <details class="settings" id="settings-box">
       <summary>GitHub 연동 설정</summary>
@@ -112,6 +118,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="script.js?v=24"></script>
+<script src="script.js?v=25"></script>
 </body>
 </html>

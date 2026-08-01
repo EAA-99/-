@@ -757,6 +757,81 @@ document.getElementById("github-save-btn").addEventListener("click", saveToGithu
 
 loadGithubConfigIntoForm();
 
+// --- 배경색 설정 ---
+
+const DEFAULT_BG_COLOR = "#14151a";
+const bgColorInput = document.getElementById("bg-color-input");
+const bgColorStatusEl = document.getElementById("bg-color-status");
+
+function applyBgColor(color) {
+  document.documentElement.style.setProperty("--bg", color);
+}
+
+async function saveBgColorToGithub(color) {
+  const cfg = getGithubConfig();
+  if (!cfg.owner || !cfg.repo || !cfg.token) {
+    bgColorStatusEl.textContent = "먼저 위 'GitHub 연동 설정'을 채워주세요.";
+    bgColorStatusEl.className = "status error";
+    document.getElementById("settings-box").open = true;
+    return;
+  }
+
+  bgColorStatusEl.textContent = "배경색 저장하는 중...";
+  bgColorStatusEl.className = "status";
+  const branch = cfg.branch || "main";
+  const apiUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/settings.json`;
+  const headers = {
+    Authorization: `Bearer ${cfg.token}`,
+    Accept: "application/vnd.github+json",
+  };
+
+  try {
+    let sha;
+    const getRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}`, { headers, cache: "no-store" });
+    if (getRes.ok) {
+      sha = (await getRes.json()).sha;
+    } else if (getRes.status !== 404) {
+      throw new Error(`파일 조회 실패 (${getRes.status})`);
+    }
+
+    const putRes = await fetch(apiUrl, {
+      method: "PUT",
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: "노래책 배경색 변경",
+        content: utf8ToBase64(JSON.stringify({ bgColor: color }, null, 2)),
+        branch,
+        ...(sha ? { sha } : {}),
+      }),
+    });
+
+    if (!putRes.ok) {
+      const err = await putRes.json().catch(() => ({}));
+      throw new Error(err.message || `저장 실패 (${putRes.status})`);
+    }
+
+    bgColorStatusEl.textContent = "배경색 저장 완료! 잠시 후 노래책에도 반영됩니다.";
+    bgColorStatusEl.className = "status success";
+  } catch (e) {
+    bgColorStatusEl.textContent = `배경색 저장 실패: ${e.message}`;
+    bgColorStatusEl.className = "status error";
+  }
+}
+
+bgColorInput.addEventListener("input", () => applyBgColor(bgColorInput.value));
+bgColorInput.addEventListener("change", () => saveBgColorToGithub(bgColorInput.value));
+
+fetch(`settings.json?t=${Date.now()}`, { cache: "no-store" })
+  .then((res) => res.json())
+  .then((data) => {
+    const color = data.bgColor || DEFAULT_BG_COLOR;
+    applyBgColor(color);
+    bgColorInput.value = color;
+  })
+  .catch(() => {
+    bgColorInput.value = DEFAULT_BG_COLOR;
+  });
+
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("sw.js").catch(() => {});

@@ -4,12 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>노래책</title>
-<link rel="stylesheet" href="style.css?v=53">
+<link rel="stylesheet" href="style.css?v=55">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <meta name="theme-color" content="#ff6fa5">
 </head>
 <body>
+
+<button id="admin-tools-btn" class="header-icon-btn" title="관리자 도구">⚙️</button>
 
 <div class="wrap" id="view-mode">
   <div class="sticky-header">
@@ -35,9 +37,7 @@
   </div>
   <ul class="song-list" id="song-list"></ul>
 
-  <details id="admin-tools">
-    <summary>관리자 도구</summary>
-
+  <div id="admin-tools" hidden>
     <div class="bg-color-row">
       <label for="bg-color-input">배경색</label>
       <input type="color" id="bg-color-input" value="#14151a">
@@ -73,7 +73,7 @@
     </div>
 
     <p class="status" id="status"></p>
-  </details>
+  </div>
 </div>
 
 <div id="confirm-modal" class="modal-overlay" hidden>
@@ -124,6 +124,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="script.js?v=26"></script>
+<script src="script.js?v=27"></script>
 </body>
 </html>

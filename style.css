@@ -32,13 +32,6 @@ body {
   margin-top: 16px;
 }
 
-#admin-tools summary {
-  cursor: pointer;
-  font-weight: 600;
-  color: var(--text-dim);
-  margin-bottom: 12px;
-}
-
 
 h1 {
   font-size: 1.5rem;
@@ -630,6 +623,21 @@ button.danger {
 
 .page-header h1 {
   margin: 0;
+}
+
+.header-icon-btn {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 30;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 10px;
+  background: var(--surface-hover);
+  color: var(--text);
+  font-size: 1.2rem;
+  line-height: 1;
 }
 
 .fab {

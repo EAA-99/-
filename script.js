@@ -78,6 +78,10 @@ const sortWidget = createSortSelector(
 // ===== 관리자 도구 DOM =====
 const statusEl = document.getElementById("status");
 const cfgStatusEl = document.getElementById("cfg-status");
+const adminToolsEl = document.getElementById("admin-tools");
+document.getElementById("admin-tools-btn").addEventListener("click", () => {
+  adminToolsEl.hidden = !adminToolsEl.hidden;
+});
 
 // ===== 곡 추가 팝업 DOM =====
 const quickAddBtn = document.getElementById("quick-add-btn");
@@ -709,6 +713,7 @@ async function saveToGithub() {
   const cfg = getGithubConfig();
   if (!cfg.owner || !cfg.repo || !cfg.token) {
     setStatus("먼저 위 'GitHub 연동 설정'을 채워주세요.", "error");
+    adminToolsEl.hidden = false;
     document.getElementById("settings-box").open = true;
     return;
   }
@@ -781,6 +786,7 @@ async function saveSettingToGithub(patch, statusEl) {
   if (!cfg.owner || !cfg.repo || !cfg.token) {
     statusEl.textContent = "먼저 위 'GitHub 연동 설정'을 채워주세요.";
     statusEl.className = "status error";
+    adminToolsEl.hidden = false;
     document.getElementById("settings-box").open = true;
     return;
   }

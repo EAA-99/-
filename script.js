@@ -666,16 +666,33 @@ document.getElementById("queue-clear-btn").addEventListener("click", () => {
 document.getElementById("queue-close-btn").addEventListener("click", closeQueueDrawer);
 queueDrawerOverlayEl.addEventListener("click", closeQueueDrawer);
 
-fetch(`songs.json?t=${Date.now()}`, { cache: "no-store" })
-  .then((res) => res.json())
-  .then((data) => {
-    songs = data.map(normalizeSong);
+// GitHub Pages로 서빙되는 songs.json은 CDN에 전파되는 데 시간이 걸려서, 방금 저장한
+// 내용이 새로고침 직후엔 옛날 값으로 보일 수 있습니다. 연동 설정이 돼있으면 GitHub
+// Contents API로 직접 최신 내용을 가져와 이 문제를 피합니다.
+async function loadInitialSongs() {
+  const cfg = getGithubConfig();
+  if (cfg.owner && cfg.repo && cfg.token) {
+    try {
+      const ctx = await fetchLatestFromGithub(cfg);
+      songs = ctx.songs;
+      applyFilters();
+      renderQueue();
+      return;
+    } catch {
+      // 연동 설정이 잘못됐거나 조회 실패 시 정적 파일로 폴백
+    }
+  }
+  try {
+    const res = await fetch(`songs.json?t=${Date.now()}`, { cache: "no-store" });
+    songs = (await res.json()).map(normalizeSong);
     applyFilters();
     renderQueue();
-  })
-  .catch(() => {
+  } catch {
     listEl.innerHTML = '<li class="empty">노래 목록을 불러오지 못했습니다</li>';
-  });
+  }
+}
+
+loadInitialSongs();
 
 // ===== 곡 추가/수정 팝업 =====
 

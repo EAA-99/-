@@ -100,6 +100,7 @@ const qaStatusEl = document.getElementById("qa-status");
 const qaTitleEl = document.getElementById("qa-title");
 const qaArtistEl = document.getElementById("qa-artist");
 const qaNotesEl = document.getElementById("qa-notes");
+const qaMrEl = document.getElementById("qa-mr");
 
 // ===== 삭제 확인 팝업 DOM =====
 const confirmModal = document.getElementById("confirm-modal");
@@ -416,7 +417,6 @@ function renderView(items) {
     li.className = "song-item";
     const metaRowHtml = `
       <div class="song-meta-row">
-        <input type="checkbox" class="song-select">
         ${song.difficulty ? starsHtml(song.difficulty) : ""}
         <button class="icon-btn danger song-delete" title="삭제">🗑️</button>
       </div>
@@ -424,6 +424,7 @@ function renderView(items) {
     const artistHtml = grouped ? "" : `<div class="song-artist"></div>`;
     if (viewMode === "grid") {
       li.innerHTML = `
+        <input type="checkbox" class="song-select">
         <div class="song-main">
           <div class="song-title-row">
             <span class="song-title"></span>
@@ -439,6 +440,7 @@ function renderView(items) {
       `;
     } else {
       li.innerHTML = `
+        <input type="checkbox" class="song-select">
         <div class="song-main">
           <div class="song-title-row">
             <span class="song-title"></span>
@@ -608,6 +610,7 @@ function openAddModal() {
   qaTitleEl.value = "";
   qaArtistEl.value = "";
   qaNotesEl.value = "";
+  qaMrEl.value = "";
   qaDiffWidget.setValue(3);
   qaTagsWidget.setValue([]);
   setQaStatus("");
@@ -620,6 +623,7 @@ function openEditModal(song) {
   qaTitleEl.value = song.title;
   qaArtistEl.value = song.artist;
   qaNotesEl.value = getNoteTags(song).join(", ");
+  qaMrEl.value = song.mr || "";
   qaDiffWidget.setValue(song.difficulty || 0);
   qaTagsWidget.setValue(song.tags);
   setQaStatus("");
@@ -651,6 +655,7 @@ document.getElementById("qa-submit-btn").addEventListener("click", async () => {
   setQaStatus("저장하는 중...");
   const tags = [...qaTagsWidget.getValue(), ...parseNotes(qaNotesEl.value)];
   const difficulty = qaDiffWidget.getValue();
+  const mr = qaMrEl.value.trim();
 
   try {
     songs = await updateSongsOnGithub((current) => {
@@ -658,12 +663,12 @@ document.getElementById("qa-submit-btn").addEventListener("click", async () => {
         const idx = current.findIndex((s) => s.id === editingSongId);
         if (idx === -1) throw new Error("곡을 찾을 수 없습니다. 이미 삭제되었을 수 있어요.");
         const updated = [...current];
-        updated[idx] = { ...updated[idx], title, artist, tags, difficulty };
+        updated[idx] = { ...updated[idx], title, artist, tags, difficulty, mr };
         return updated;
       }
       return [
         ...current,
-        { id: current.reduce((max, s) => Math.max(max, s.id), 0) + 1, title, artist, tags, difficulty },
+        { id: current.reduce((max, s) => Math.max(max, s.id), 0) + 1, title, artist, tags, difficulty, mr },
       ];
     }, editingSongId ? "노래책 곡 수정" : "노래책 곡 추가");
 

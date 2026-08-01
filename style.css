@@ -143,13 +143,6 @@ h1 {
   font-weight: 600;
 }
 
-.count-row {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  margin: 12px 2px;
-}
-
 .view-toggle {
   flex-shrink: 0;
   display: flex;
@@ -188,6 +181,22 @@ h1 {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+  margin-top: 12px;
+}
+
+.tag-tabs-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tag-tabs-row .tag-tabs {
+  margin-top: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.tag-tabs-row .view-toggle {
   margin-top: 12px;
 }
 

@@ -249,6 +249,33 @@ h1 {
   gap: 8px;
 }
 
+.artist-group {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 16px 2px 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.artist-group:first-child {
+  margin-top: 0;
+}
+
+.artist-group-count {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  font-weight: 400;
+  flex-shrink: 0;
+}
+
+.grid-view .artist-group {
+  grid-column: 1 / -1;
+}
+
 .song-item {
   display: flex;
   align-items: center;

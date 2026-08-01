@@ -146,14 +146,8 @@ h1 {
 .count-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   margin: 12px 2px;
-}
-
-.count {
-  color: var(--text-dim);
-  font-size: 0.85rem;
-  margin: 0;
 }
 
 .view-toggle {
@@ -342,36 +336,31 @@ h1 {
 
 .grid-view .song-item {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  align-items: flex-start;
-  gap: 4px 6px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
   position: relative;
 }
 
-.grid-view .song-main,
-.grid-view .song-title-row,
-.grid-view .song-side,
-.grid-view .song-tags {
-  display: contents;
-}
-
-.grid-view .song-artist {
-  order: 1;
-  flex-basis: 100%;
+.grid-view .song-main {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
   padding-right: 30px;
 }
 
 .grid-view .song-title {
-  order: 2;
-  flex-basis: 100%;
   white-space: normal;
-  padding-right: 30px;
 }
 
-.grid-view .song-badge,
-.grid-view .song-tag {
-  order: 3;
+.grid-view .song-side {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.grid-view .song-tags {
+  justify-content: flex-start;
 }
 
 .grid-view .song-meta-row {

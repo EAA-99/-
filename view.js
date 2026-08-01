@@ -10,7 +10,6 @@ let viewMode = localStorage.getItem(VIEW_MODE_KEY) === "grid" ? "grid" : "list";
 
 const listEl = document.getElementById("song-list");
 const searchEl = document.getElementById("search");
-const countEl = document.getElementById("count");
 
 function createSortSelector(container, options, initialValue, onChange) {
   let value = initialValue;
@@ -122,7 +121,6 @@ function render(items) {
       li.innerHTML = `
         <div class="song-main">
           <div class="song-title-row">
-            ${category ? `<span class="song-badge"></span>` : ""}
             <span class="song-title"></span>
           </div>
           <div class="song-artist"></div>
@@ -132,7 +130,9 @@ function render(items) {
             ${song.difficulty ? starsHtml(song.difficulty) : ""}
             <button class="icon-btn like-btn" title="즐겨찾기">${liked ? "❤️" : "🤍"}</button>
           </div>
-          <div class="song-tags"></div>
+          <div class="song-tags">
+            ${category ? `<span class="song-badge"></span>` : ""}
+          </div>
         </div>
       `;
       if (category) li.querySelector(".song-badge").textContent = category;
@@ -154,8 +154,6 @@ function render(items) {
       listEl.appendChild(li);
     }
   }
-
-  countEl.textContent = `총 ${items.length}곡`;
 }
 
 let activeTag = "";

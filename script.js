@@ -793,7 +793,7 @@ async function githubErrorMessage(res) {
   return [err.message, detail].filter(Boolean).join(" — ") || `요청 실패 (${res.status})`;
 }
 
-async function putNewRepoFile(owner, repo, token, path, base64Content, message) {
+async function putNewRepoFile(owner, repo, token, branch, path, base64Content, message) {
   const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
     method: "PUT",
     headers: {
@@ -801,7 +801,7 @@ async function putNewRepoFile(owner, repo, token, path, base64Content, message) 
       Accept: "application/vnd.github+json",
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ message, content: base64Content, branch: "main" }),
+    body: JSON.stringify({ message, content: base64Content, branch }),
   });
   if (!res.ok) {
     throw new Error(`${path} 업로드 실패: ${await githubErrorMessage(res)}`);
@@ -843,29 +843,33 @@ document.getElementById("new-site-create-btn").addEventListener("click", async (
     if (!createRes.ok) {
       throw new Error(`저장소 생성 실패: ${await githubErrorMessage(createRes)}`);
     }
+    // auto_init으로 만든 저장소의 기본 브랜치는 계정 설정에 따라 main이 아니라 master일 수도
+    // 있어서, 실제로 생성된 브랜치 이름을 응답에서 그대로 가져다 써야 합니다.
+    const defaultBranch = (await createRes.json()).default_branch || "main";
 
     const totalFiles = NEW_SITE_TEXT_FILES.length + NEW_SITE_BINARY_FILES.length + 2;
     let done = 0;
 
     for (const path of NEW_SITE_TEXT_FILES) {
       const text = await fetch(path, { cache: "no-store" }).then((r) => r.text());
-      await putNewRepoFile(owner, repoName, token, path, utf8ToBase64(text), "초기 사이트 파일");
+      await putNewRepoFile(owner, repoName, token, defaultBranch, path, utf8ToBase64(text), "초기 사이트 파일");
       done++;
       setNewSiteStatus(`파일 올리는 중... (${done}/${totalFiles})`);
     }
     for (const path of NEW_SITE_BINARY_FILES) {
       const buf = await fetch(path, { cache: "no-store" }).then((r) => r.arrayBuffer());
-      await putNewRepoFile(owner, repoName, token, path, arrayBufferToBase64(buf), "초기 사이트 파일");
+      await putNewRepoFile(owner, repoName, token, defaultBranch, path, arrayBufferToBase64(buf), "초기 사이트 파일");
       done++;
       setNewSiteStatus(`파일 올리는 중... (${done}/${totalFiles})`);
     }
-    await putNewRepoFile(owner, repoName, token, "songs.json", utf8ToBase64("[]\n"), "빈 곡 목록으로 시작");
+    await putNewRepoFile(owner, repoName, token, defaultBranch, "songs.json", utf8ToBase64("[]\n"), "빈 곡 목록으로 시작");
     done++;
     setNewSiteStatus(`파일 올리는 중... (${done}/${totalFiles})`);
     await putNewRepoFile(
       owner,
       repoName,
       token,
+      defaultBranch,
       "settings.json",
       utf8ToBase64(JSON.stringify({ bgColor: DEFAULT_BG_COLOR, songBgColor: DEFAULT_SONG_BG_COLOR }, null, 2) + "\n"),
       "기본 설정으로 시작"
@@ -877,7 +881,7 @@ document.getElementById("new-site-create-btn").addEventListener("click", async (
     const pagesRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/pages`, {
       method: "POST",
       headers: { ...headers, "Content-Type": "application/json" },
-      body: JSON.stringify({ build_type: "legacy", source: { branch: "main", path: "/" } }),
+      body: JSON.stringify({ build_type: "legacy", source: { branch: defaultBranch, path: "/" } }),
     });
     if (!pagesRes.ok && pagesRes.status !== 409) {
       throw new Error(
@@ -886,7 +890,7 @@ document.getElementById("new-site-create-btn").addEventListener("click", async (
       );
     }
 
-    localStorage.setItem(GITHUB_CFG_KEY, JSON.stringify({ owner, repo: repoName, branch: "main", token }));
+    localStorage.setItem(GITHUB_CFG_KEY, JSON.stringify({ owner, repo: repoName, branch: defaultBranch, token }));
     loadGithubConfigIntoForm();
 
     const siteUrl = `https://${owner.toLowerCase()}.github.io/${repoName}/`;

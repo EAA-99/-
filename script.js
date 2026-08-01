@@ -80,7 +80,13 @@ const statusEl = document.getElementById("status");
 const cfgStatusEl = document.getElementById("cfg-status");
 const adminToolsEl = document.getElementById("admin-tools");
 document.getElementById("admin-tools-btn").addEventListener("click", () => {
-  adminToolsEl.hidden = !adminToolsEl.hidden;
+  adminToolsEl.hidden = false;
+});
+document.getElementById("admin-tools-close-btn").addEventListener("click", () => {
+  adminToolsEl.hidden = true;
+});
+adminToolsEl.addEventListener("click", (e) => {
+  if (e.target === adminToolsEl) adminToolsEl.hidden = true;
 });
 
 // ===== 곡 추가 팝업 DOM =====
@@ -538,6 +544,7 @@ quickAddModal.addEventListener("click", (e) => {
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && !quickAddModal.hidden) closeQuickAddModal();
   if (e.key === "Escape" && !confirmModal.hidden) confirmCancelBtn.click();
+  if (e.key === "Escape" && !adminToolsEl.hidden) adminToolsEl.hidden = true;
 });
 
 document.getElementById("qa-submit-btn").addEventListener("click", async () => {

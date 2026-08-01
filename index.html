@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>노래책</title>
-<link rel="stylesheet" href="style.css?v=55">
+<link rel="stylesheet" href="style.css?v=56">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <meta name="theme-color" content="#ff6fa5">
@@ -36,8 +36,12 @@
     <button id="view-delete-selected-btn" class="danger">선택 삭제</button>
   </div>
   <ul class="song-list" id="song-list"></ul>
+</div>
 
-  <div id="admin-tools" hidden>
+<div id="admin-tools" class="modal-overlay" hidden>
+  <div class="modal-card">
+    <h2 class="modal-title">관리자 도구</h2>
+
     <div class="bg-color-row">
       <label for="bg-color-input">배경색</label>
       <input type="color" id="bg-color-input" value="#14151a">
@@ -73,6 +77,10 @@
     </div>
 
     <p class="status" id="status"></p>
+
+    <div class="modal-actions">
+      <button id="admin-tools-close-btn">닫기</button>
+    </div>
   </div>
 </div>
 
@@ -124,6 +132,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="script.js?v=27"></script>
+<script src="script.js?v=28"></script>
 </body>
 </html>

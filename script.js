@@ -588,6 +588,8 @@ function saveQueue() {
 
 const queueListEl = document.getElementById("queue-list");
 const queueCountEl = document.getElementById("queue-count");
+const queueDrawerEl = document.getElementById("queue-drawer");
+const queueDrawerOverlayEl = document.getElementById("queue-drawer-overlay");
 
 function renderQueue() {
   const items = queue.map((id) => songs.find((s) => s.id === id)).filter(Boolean);
@@ -597,10 +599,14 @@ function renderQueue() {
     queueListEl.innerHTML = '<li class="empty">대기열이 비어있습니다</li>';
     return;
   }
-  for (const song of items) {
+  items.forEach((song, i) => {
     const li = document.createElement("li");
     li.className = "queue-item";
     li.innerHTML = `
+      <div class="queue-reorder">
+        <button class="icon-btn queue-up-btn" title="위로"${i === 0 ? " disabled" : ""}>▲</button>
+        <button class="icon-btn queue-down-btn" title="아래로"${i === items.length - 1 ? " disabled" : ""}>▼</button>
+      </div>
       <div class="queue-item-info">
         <span class="queue-item-title"></span>
         <span class="queue-item-artist"></span>
@@ -609,25 +615,46 @@ function renderQueue() {
     `;
     li.querySelector(".queue-item-title").textContent = song.title;
     li.querySelector(".queue-item-artist").textContent = song.artist;
+    li.querySelector(".queue-up-btn").addEventListener("click", () => {
+      const idx = queue.indexOf(song.id);
+      if (idx <= 0) return;
+      [queue[idx - 1], queue[idx]] = [queue[idx], queue[idx - 1]];
+      saveQueue();
+      renderQueue();
+    });
+    li.querySelector(".queue-down-btn").addEventListener("click", () => {
+      const idx = queue.indexOf(song.id);
+      if (idx === -1 || idx >= queue.length - 1) return;
+      [queue[idx + 1], queue[idx]] = [queue[idx], queue[idx + 1]];
+      saveQueue();
+      renderQueue();
+    });
     li.querySelector(".queue-remove-btn").addEventListener("click", () => {
       queue = queue.filter((id) => id !== song.id);
       saveQueue();
       renderQueue();
     });
     queueListEl.appendChild(li);
-  }
+  });
+}
+
+function openQueueDrawer() {
+  queueDrawerEl.classList.add("open");
+  queueDrawerOverlayEl.classList.add("open");
+}
+
+function closeQueueDrawer() {
+  queueDrawerEl.classList.remove("open");
+  queueDrawerOverlayEl.classList.remove("open");
 }
 
 document.getElementById("queue-add-btn").addEventListener("click", () => {
-  if (viewSelectedIds.size === 0) {
-    alert("선택된 곡이 없습니다.");
-    return;
-  }
   for (const id of viewSelectedIds) {
     if (!queue.includes(id)) queue.push(id);
   }
   saveQueue();
   renderQueue();
+  openQueueDrawer();
 });
 
 document.getElementById("queue-clear-btn").addEventListener("click", () => {
@@ -635,6 +662,9 @@ document.getElementById("queue-clear-btn").addEventListener("click", () => {
   saveQueue();
   renderQueue();
 });
+
+document.getElementById("queue-close-btn").addEventListener("click", closeQueueDrawer);
+queueDrawerOverlayEl.addEventListener("click", closeQueueDrawer);
 
 fetch(`songs.json?t=${Date.now()}`, { cache: "no-store" })
   .then((res) => res.json())
@@ -703,6 +733,7 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && !quickAddModal.hidden) closeQuickAddModal();
   if (e.key === "Escape" && !confirmModal.hidden) confirmCancelBtn.click();
   if (e.key === "Escape" && !adminToolsEl.hidden) adminToolsEl.hidden = true;
+  if (e.key === "Escape" && queueDrawerEl.classList.contains("open")) closeQueueDrawer();
 });
 
 document.getElementById("qa-submit-btn").addEventListener("click", async () => {

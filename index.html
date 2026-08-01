@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>노래책</title>
-<link rel="stylesheet" href="style.css?v=66">
+<link rel="stylesheet" href="style.css?v=67">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <meta name="theme-color" content="#ff6fa5">
@@ -42,15 +42,19 @@
     </div>
   </div>
 
-  <div class="queue-section" id="queue-section">
-    <div class="queue-header">
-      <h2>대기열<span class="tag-count" id="queue-count"></span></h2>
-      <button id="queue-clear-btn" class="danger">비우기</button>
-    </div>
-    <ul class="queue-list" id="queue-list"></ul>
-  </div>
-
   <ul class="song-list" id="song-list"></ul>
+</div>
+
+<div class="queue-drawer-overlay" id="queue-drawer-overlay"></div>
+<div class="queue-drawer" id="queue-drawer">
+  <div class="queue-header">
+    <h2>대기열<span class="tag-count" id="queue-count"></span></h2>
+    <button id="queue-close-btn" class="icon-btn" title="닫기">✕</button>
+  </div>
+  <ul class="queue-list" id="queue-list"></ul>
+  <div class="modal-actions">
+    <button id="queue-clear-btn" class="danger">비우기</button>
+  </div>
 </div>
 
 <div id="admin-tools" class="modal-overlay" hidden>
@@ -165,6 +169,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="script.js?v=42"></script>
+<script src="script.js?v=43"></script>
 </body>
 </html>

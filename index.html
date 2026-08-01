@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>노래책</title>
-<link rel="stylesheet" href="style.css?v=56">
+<link rel="stylesheet" href="style.css?v=57">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <meta name="theme-color" content="#ff6fa5">
@@ -70,7 +70,10 @@
       <summary>새 저장소로 내 사이트 만들기</summary>
       <p class="status">본인 GitHub 계정에 이 사이트 파일을 통째로 복사한 새 저장소 + GitHub Pages 사이트를 자동으로 만듭니다. 곡 목록은 빈 상태로 시작해요.</p>
       <div class="settings-grid">
-        <label>새 토큰 (Classic PAT, repo 권한)<input type="password" id="new-site-token" placeholder="ghp_..."></label>
+        <label>
+          <span class="field-label-row">새 토큰 (Classic PAT, repo 권한) <a href="https://github.com/settings/tokens/new?scopes=repo&description=new-songbook-site" target="_blank" rel="noopener" class="inline-link">토큰 발급</a></span>
+          <input type="password" id="new-site-token" placeholder="ghp_...">
+        </label>
         <label>새 저장소 이름<input type="text" id="new-site-repo-name" placeholder="예: my-songbook" value="my-songbook"></label>
       </div>
       <button id="new-site-create-btn">사이트 만들기</button>

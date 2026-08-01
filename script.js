@@ -592,46 +592,45 @@ const queueDrawerEl = document.getElementById("queue-drawer");
 const queueDrawerOverlayEl = document.getElementById("queue-drawer-overlay");
 
 function makeQueueItemDraggable(li) {
-  let startY = null;
-  let dragging = false;
-
   li.addEventListener("pointerdown", (e) => {
     if (e.target.closest("button")) return;
-    startY = e.clientY;
-    li.setPointerCapture(e.pointerId);
+    e.preventDefault();
+    const startY = e.clientY;
+    let dragging = false;
+
+    function onMove(ev) {
+      if (!dragging) {
+        if (Math.abs(ev.clientY - startY) < 6) return;
+        dragging = true;
+        li.classList.add("dragging");
+      }
+      const siblings = [...queueListEl.children].filter((el) => el !== li);
+      const target = siblings.find((other) => {
+        const rect = other.getBoundingClientRect();
+        return ev.clientY < rect.top + rect.height / 2;
+      });
+      if (target) {
+        queueListEl.insertBefore(li, target);
+      } else {
+        queueListEl.appendChild(li);
+      }
+    }
+
+    function onUp() {
+      document.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerup", onUp);
+      document.removeEventListener("pointercancel", onUp);
+      if (dragging) {
+        li.classList.remove("dragging");
+        queue = [...queueListEl.children].map((el) => Number(el.dataset.songId));
+        saveQueue();
+      }
+    }
+
+    document.addEventListener("pointermove", onMove);
+    document.addEventListener("pointerup", onUp);
+    document.addEventListener("pointercancel", onUp);
   });
-
-  li.addEventListener("pointermove", (e) => {
-    if (startY === null) return;
-    if (!dragging) {
-      if (Math.abs(e.clientY - startY) < 6) return;
-      dragging = true;
-      li.classList.add("dragging");
-    }
-    const siblings = [...queueListEl.children].filter((el) => el !== li);
-    const target = siblings.find((other) => {
-      const rect = other.getBoundingClientRect();
-      return e.clientY < rect.top + rect.height / 2;
-    });
-    if (target) {
-      queueListEl.insertBefore(li, target);
-    } else {
-      queueListEl.appendChild(li);
-    }
-  });
-
-  function endDrag() {
-    if (dragging) {
-      li.classList.remove("dragging");
-      queue = [...queueListEl.children].map((el) => Number(el.dataset.songId));
-      saveQueue();
-    }
-    startY = null;
-    dragging = false;
-  }
-
-  li.addEventListener("pointerup", endDrag);
-  li.addEventListener("pointercancel", endDrag);
 }
 
 function renderQueue() {

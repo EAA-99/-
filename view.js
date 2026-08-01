@@ -2,9 +2,11 @@
 
 const TAG_OPTIONS = ["한식", "일식", "양식"];
 const LIKES_KEY = "songbook_likes";
+const VIEW_MODE_KEY = "songbook_view_mode";
 
 let songs = [];
 let likedIds = loadLikes();
+let viewMode = localStorage.getItem(VIEW_MODE_KEY) === "grid" ? "grid" : "list";
 
 const listEl = document.getElementById("song-list");
 const searchEl = document.getElementById("search");
@@ -212,6 +214,21 @@ document.querySelectorAll("#tag-tabs .tag-tab").forEach((btn) => {
     applyFilters();
   });
 });
+
+function applyViewMode() {
+  listEl.classList.toggle("grid-view", viewMode === "grid");
+  document.querySelectorAll(".view-toggle-btn").forEach((b) => b.classList.toggle("active", b.dataset.view === viewMode));
+}
+
+document.querySelectorAll(".view-toggle-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    viewMode = btn.dataset.view;
+    localStorage.setItem(VIEW_MODE_KEY, viewMode);
+    applyViewMode();
+  });
+});
+
+applyViewMode();
 
 fetch(`songs.json?t=${Date.now()}`, { cache: "no-store" })
   .then((res) => res.json())

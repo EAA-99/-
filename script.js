@@ -1,5 +1,6 @@
 // ===== 공통 상수 =====
 const GITHUB_CFG_KEY = "songbook_github_cfg";
+const DEFAULT_GITHUB_CFG = { owner: "eaa-99", repo: "-", branch: "main" };
 const TAG_OPTIONS = ["한식", "일식", "양식"];
 
 let songs = [];
@@ -141,11 +142,18 @@ function parseNotes(text) {
 }
 
 function getGithubConfig() {
+  let saved;
   try {
-    return JSON.parse(localStorage.getItem(GITHUB_CFG_KEY)) || {};
+    saved = JSON.parse(localStorage.getItem(GITHUB_CFG_KEY)) || {};
   } catch {
-    return {};
+    saved = {};
   }
+  return {
+    owner: saved.owner || DEFAULT_GITHUB_CFG.owner,
+    repo: saved.repo || DEFAULT_GITHUB_CFG.repo,
+    branch: saved.branch || DEFAULT_GITHUB_CFG.branch,
+    token: saved.token || "",
+  };
 }
 
 function utf8ToBase64(str) {

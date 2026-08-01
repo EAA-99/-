@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>노래책</title>
-<link rel="stylesheet" href="style.css?v=41">
+<link rel="stylesheet" href="style.css?v=42">
 </head>
 <body>
 
@@ -16,6 +16,10 @@
     <div class="search-row">
       <input type="text" id="search" class="search-box" placeholder="가수 또는 제목 검색..." autocomplete="off">
       <div id="sort-select" class="sort-select"></div>
+      <div class="view-toggle" id="view-toggle">
+        <button type="button" class="view-toggle-btn active" data-view="list" title="목록형">☰</button>
+        <button type="button" class="view-toggle-btn" data-view="grid" title="카드형">▦</button>
+      </div>
     </div>
     <div class="tag-tabs" id="tag-tabs">
       <button class="tag-tab active" data-tag="">전체<span class="tag-count"></span></button>
@@ -29,6 +33,6 @@
   <ul class="song-list" id="song-list"></ul>
 </div>
 
-<script src="view.js?v=7"></script>
+<script src="view.js?v=8"></script>
 </body>
 </html>

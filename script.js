@@ -769,6 +769,126 @@ document.getElementById("github-save-btn").addEventListener("click", saveToGithu
 
 loadGithubConfigIntoForm();
 
+// --- 새 저장소로 내 사이트 만들기 ---
+// 지금 이 사이트를 서빙 중인 origin에서 그대로 복사해서, 사용자의 새 GitHub 저장소에
+// 파일을 올리고 GitHub Pages까지 켜는 흐름입니다. 저장소 생성/Pages 활성화는
+// fine-grained PAT로는 안 되는 경우가 많아서 classic PAT(repo 권한)을 안내합니다.
+const NEW_SITE_TEXT_FILES = ["index.html", "script.js", "style.css", "view.html", "view.js", "manifest.json", "sw.js"];
+const NEW_SITE_BINARY_FILES = ["icon-192.png", "icon-512.png"];
+
+function arrayBufferToBase64(buffer) {
+  let binary = "";
+  new Uint8Array(buffer).forEach((b) => (binary += String.fromCharCode(b)));
+  return btoa(binary);
+}
+
+async function putNewRepoFile(owner, repo, token, path, base64Content, message) {
+  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/vnd.github+json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ message, content: base64Content, branch: "main" }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(`${path} 업로드 실패: ${err.message || res.status}`);
+  }
+}
+
+const newSiteStatusEl = document.getElementById("new-site-status");
+
+document.getElementById("new-site-create-btn").addEventListener("click", async (e) => {
+  const btn = e.currentTarget;
+  const token = document.getElementById("new-site-token").value.trim();
+  const repoName = document.getElementById("new-site-repo-name").value.trim();
+  if (!token || !repoName) {
+    newSiteStatusEl.textContent = "토큰과 저장소 이름을 입력해주세요.";
+    newSiteStatusEl.className = "status error";
+    return;
+  }
+
+  btn.disabled = true;
+  const headers = { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" };
+
+  function setNewSiteStatus(text) {
+    newSiteStatusEl.textContent = text;
+    newSiteStatusEl.className = "status";
+  }
+
+  try {
+    setNewSiteStatus("계정 확인하는 중...");
+    const userRes = await fetch("https://api.github.com/user", { headers });
+    if (!userRes.ok) throw new Error("토큰이 유효하지 않습니다.");
+    const owner = (await userRes.json()).login;
+
+    setNewSiteStatus("저장소 만드는 중...");
+    const createRes = await fetch("https://api.github.com/user/repos", {
+      method: "POST",
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify({ name: repoName, private: false, auto_init: true }),
+    });
+    if (!createRes.ok) {
+      const err = await createRes.json().catch(() => ({}));
+      throw new Error(err.message || `저장소 생성 실패 (${createRes.status})`);
+    }
+
+    const totalFiles = NEW_SITE_TEXT_FILES.length + NEW_SITE_BINARY_FILES.length + 2;
+    let done = 0;
+
+    for (const path of NEW_SITE_TEXT_FILES) {
+      const text = await fetch(path, { cache: "no-store" }).then((r) => r.text());
+      await putNewRepoFile(owner, repoName, token, path, utf8ToBase64(text), "초기 사이트 파일");
+      done++;
+      setNewSiteStatus(`파일 올리는 중... (${done}/${totalFiles})`);
+    }
+    for (const path of NEW_SITE_BINARY_FILES) {
+      const buf = await fetch(path, { cache: "no-store" }).then((r) => r.arrayBuffer());
+      await putNewRepoFile(owner, repoName, token, path, arrayBufferToBase64(buf), "초기 사이트 파일");
+      done++;
+      setNewSiteStatus(`파일 올리는 중... (${done}/${totalFiles})`);
+    }
+    await putNewRepoFile(owner, repoName, token, "songs.json", utf8ToBase64("[]\n"), "빈 곡 목록으로 시작");
+    done++;
+    setNewSiteStatus(`파일 올리는 중... (${done}/${totalFiles})`);
+    await putNewRepoFile(
+      owner,
+      repoName,
+      token,
+      "settings.json",
+      utf8ToBase64(JSON.stringify({ bgColor: DEFAULT_BG_COLOR, songBgColor: DEFAULT_SONG_BG_COLOR }, null, 2) + "\n"),
+      "기본 설정으로 시작"
+    );
+    done++;
+    setNewSiteStatus(`파일 올리는 중... (${done}/${totalFiles})`);
+
+    setNewSiteStatus("GitHub Pages 활성화하는 중...");
+    const pagesRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/pages`, {
+      method: "POST",
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify({ build_type: "legacy", source: { branch: "main", path: "/" } }),
+    });
+    if (!pagesRes.ok && pagesRes.status !== 409) {
+      const err = await pagesRes.json().catch(() => ({}));
+      throw new Error(
+        `파일은 다 올라갔지만 Pages 자동 활성화는 실패했어요 (${err.message || pagesRes.status}). ` +
+          `새 저장소의 Settings → Pages에서 branch를 main으로 두고 수동으로 켜주세요.`
+      );
+    }
+
+    const siteUrl = `https://${owner.toLowerCase()}.github.io/${repoName}/`;
+    newSiteStatusEl.innerHTML = `완료! 몇 분 후 <a href="${siteUrl}" target="_blank" rel="noopener">${siteUrl}</a> 에서 확인할 수 있어요. 그 사이트의 관리자 도구에서 이 토큰으로 GitHub 연동 설정을 채우면 편집할 수 있습니다.`;
+    newSiteStatusEl.className = "status success";
+  } catch (e) {
+    newSiteStatusEl.textContent = `실패: ${e.message}`;
+    newSiteStatusEl.className = "status error";
+  } finally {
+    btn.disabled = false;
+  }
+});
+
 // --- 배경색 설정 ---
 
 const DEFAULT_BG_COLOR = "#14151a";

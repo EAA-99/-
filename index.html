@@ -66,6 +66,17 @@
       <p class="status" id="cfg-status"></p>
     </details>
 
+    <details class="settings" id="new-site-box">
+      <summary>새 저장소로 내 사이트 만들기</summary>
+      <p class="status">본인 GitHub 계정에 이 사이트 파일을 통째로 복사한 새 저장소 + GitHub Pages 사이트를 자동으로 만듭니다. 곡 목록은 빈 상태로 시작해요.</p>
+      <div class="settings-grid">
+        <label>새 토큰 (Classic PAT, repo 권한)<input type="password" id="new-site-token" placeholder="ghp_..."></label>
+        <label>새 저장소 이름<input type="text" id="new-site-repo-name" placeholder="예: my-songbook" value="my-songbook"></label>
+      </div>
+      <button id="new-site-create-btn">사이트 만들기</button>
+      <p class="status" id="new-site-status"></p>
+    </details>
+
     <div class="toolbar">
       <button id="github-save-btn" class="primary">GitHub에 저장</button>
       <button id="excel-import-btn">엑셀로 곡 추가</button>
@@ -132,6 +143,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="script.js?v=28"></script>
+<script src="script.js?v=29"></script>
 </body>
 </html>

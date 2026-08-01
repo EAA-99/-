@@ -878,8 +878,11 @@ document.getElementById("new-site-create-btn").addEventListener("click", async (
       );
     }
 
+    localStorage.setItem(GITHUB_CFG_KEY, JSON.stringify({ owner, repo: repoName, branch: "main", token }));
+    loadGithubConfigIntoForm();
+
     const siteUrl = `https://${owner.toLowerCase()}.github.io/${repoName}/`;
-    newSiteStatusEl.innerHTML = `완료! 몇 분 후 <a href="${siteUrl}" target="_blank" rel="noopener">${siteUrl}</a> 에서 확인할 수 있어요. 그 사이트의 관리자 도구에서 이 토큰으로 GitHub 연동 설정을 채우면 편집할 수 있습니다.`;
+    newSiteStatusEl.innerHTML = `완료! 이 화면의 GitHub 연동 설정이 방금 만든 사이트로 자동 연결됐어요 — 지금부터 여기서 곡을 추가/수정하면 그 사이트에 반영됩니다. 몇 분 후 <a href="${siteUrl}" target="_blank" rel="noopener">${siteUrl}</a> 에서 확인할 수 있어요.`;
     newSiteStatusEl.className = "status success";
   } catch (e) {
     newSiteStatusEl.textContent = `실패: ${e.message}`;

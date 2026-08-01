@@ -293,6 +293,11 @@ h1 {
   font-size: 0.85rem;
 }
 
+.song-main > .song-badge {
+  display: inline-block;
+  margin-top: 4px;
+}
+
 .song-tag {
   flex-shrink: 0;
   font-size: 0.75rem;

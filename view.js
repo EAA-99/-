@@ -118,23 +118,42 @@ function render(items) {
       const liked = likedIds.has(song.id);
       const li = document.createElement("li");
       li.className = "song-item";
-      li.innerHTML = `
-        <div class="song-main">
-          <div class="song-title-row">
-            <span class="song-title"></span>
-          </div>
-          <div class="song-artist"></div>
-        </div>
-        <div class="song-side">
-          <div class="song-meta-row">
-            ${song.difficulty ? starsHtml(song.difficulty) : ""}
-            <button class="icon-btn like-btn" title="즐겨찾기">${liked ? "❤️" : "🤍"}</button>
-          </div>
-          <div class="song-tags">
-            ${category ? `<span class="song-badge"></span>` : ""}
-          </div>
+      const metaRowHtml = `
+        <div class="song-meta-row">
+          ${song.difficulty ? starsHtml(song.difficulty) : ""}
+          <button class="icon-btn like-btn" title="즐겨찾기">${liked ? "❤️" : "🤍"}</button>
         </div>
       `;
+      if (viewMode === "grid") {
+        li.innerHTML = `
+          <div class="song-main">
+            <div class="song-title-row">
+              <span class="song-title"></span>
+            </div>
+            <div class="song-artist"></div>
+          </div>
+          <div class="song-side">
+            ${metaRowHtml}
+            <div class="song-tags">
+              ${category ? `<span class="song-badge"></span>` : ""}
+            </div>
+          </div>
+        `;
+      } else {
+        li.innerHTML = `
+          <div class="song-main">
+            <div class="song-title-row">
+              <span class="song-title"></span>
+            </div>
+            <div class="song-artist"></div>
+            ${category ? `<span class="song-badge"></span>` : ""}
+          </div>
+          <div class="song-side">
+            ${metaRowHtml}
+            <div class="song-tags"></div>
+          </div>
+        `;
+      }
       if (category) li.querySelector(".song-badge").textContent = category;
       li.querySelector(".song-title").textContent = song.title;
       li.querySelector(".song-artist").textContent = song.artist;
@@ -223,6 +242,7 @@ document.querySelectorAll(".view-toggle-btn").forEach((btn) => {
     viewMode = btn.dataset.view;
     localStorage.setItem(VIEW_MODE_KEY, viewMode);
     applyViewMode();
+    applyFilters();
   });
 });
 

@@ -306,7 +306,7 @@ function createStarSelector(container, initialValue, onChange) {
   let value = Math.max(0, Math.min(5, Math.round(Number.isFinite(initialValue) ? initialValue : 0)));
 
   function starsLabel(n) {
-    return "★".repeat(n) + "☆".repeat(5 - n);
+    return `<span class="star-filled">${"★".repeat(n)}</span><span class="star-empty">${"☆".repeat(5 - n)}</span>`;
   }
 
   const trigger = document.createElement("button");
@@ -333,7 +333,7 @@ function createStarSelector(container, initialValue, onChange) {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "sort-option";
-    btn.textContent = starsLabel(n);
+    btn.innerHTML = starsLabel(n);
     btn.addEventListener("click", () => {
       value = n;
       updateTrigger();
@@ -608,21 +608,15 @@ function makeQueueItemDraggable(li) {
       dragging = true;
       li.classList.add("dragging");
     }
-    const siblings = [...queueListEl.children];
-    const liIndex = siblings.indexOf(li);
-    for (let i = 0; i < siblings.length; i++) {
-      const other = siblings[i];
-      if (other === li) continue;
+    const siblings = [...queueListEl.children].filter((el) => el !== li);
+    const target = siblings.find((other) => {
       const rect = other.getBoundingClientRect();
-      const midY = rect.top + rect.height / 2;
-      if (e.clientY < midY && i < liIndex) {
-        queueListEl.insertBefore(li, other);
-        break;
-      }
-      if (e.clientY > midY && i > liIndex) {
-        queueListEl.insertBefore(li, other.nextSibling);
-        break;
-      }
+      return e.clientY < rect.top + rect.height / 2;
+    });
+    if (target) {
+      queueListEl.insertBefore(li, target);
+    } else {
+      queueListEl.appendChild(li);
     }
   });
 

@@ -133,6 +133,14 @@ h1 {
   font-weight: 600;
 }
 
+.star-filled {
+  color: #000;
+}
+
+.star-empty {
+  color: var(--text-dim);
+}
+
 .view-toggle {
   flex-shrink: 0;
   display: flex;
@@ -563,6 +571,12 @@ button.danger {
   gap: 6px;
   margin: 0;
   font-size: 1rem;
+}
+
+.queue-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .queue-list {

@@ -107,6 +107,9 @@ h1 {
   flex-direction: column;
   gap: 2px;
   padding: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: var(--surface-hover);
   border: 1px solid var(--border);
   border-radius: 12px;

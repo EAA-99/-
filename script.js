@@ -298,7 +298,7 @@ function createGenreSelector(container, options, initialValue, placeholder, onCh
 }
 
 function createStarSelector(container, initialValue, onChange) {
-  let value = Math.max(1, Math.min(5, Math.round(initialValue || 1)));
+  let value = Math.max(0, Math.min(5, Math.round(Number.isFinite(initialValue) ? initialValue : 0)));
 
   function starsLabel(n) {
     return "★".repeat(n) + "☆".repeat(5 - n);
@@ -320,11 +320,11 @@ function createStarSelector(container, initialValue, onChange) {
 
   function updateActive() {
     dropdown.querySelectorAll(".sort-option").forEach((btn, i) => {
-      btn.classList.toggle("active", i + 1 === value);
+      btn.classList.toggle("active", i === value);
     });
   }
 
-  for (let n = 1; n <= 5; n++) {
+  for (let n = 0; n <= 5; n++) {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "sort-option";
@@ -354,7 +354,7 @@ function createStarSelector(container, initialValue, onChange) {
   return {
     getValue: () => value,
     setValue: (v) => {
-      value = Math.max(1, Math.min(5, Math.round(v || 1)));
+      value = Math.max(0, Math.min(5, Math.round(Number.isFinite(v) ? v : 0)));
       updateTrigger();
       updateActive();
     },

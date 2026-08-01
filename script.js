@@ -893,6 +893,13 @@ document.getElementById("new-site-create-btn").addEventListener("click", async (
     localStorage.setItem(GITHUB_CFG_KEY, JSON.stringify({ owner, repo: repoName, branch: defaultBranch, token }));
     loadGithubConfigIntoForm();
 
+    // 연동 설정만 바꾸면 화면에 이미 떠 있는 예전 목록은 그대로 남아있으니,
+    // 새로 연결된 저장소의 실제 곡 목록(빈 목록)으로 화면을 갱신합니다.
+    try {
+      songs = (await fetchLatestFromGithub(getGithubConfig())).songs;
+      applyFilters();
+    } catch {}
+
     const siteUrl = `https://${owner.toLowerCase()}.github.io/${repoName}/`;
     newSiteStatusEl.innerHTML = `완료! 이 화면의 GitHub 연동 설정이 방금 만든 사이트로 자동 연결됐어요 — 지금부터 여기서 곡을 추가/수정하면 그 사이트에 반영됩니다. 몇 분 후 <a href="${siteUrl}" target="_blank" rel="noopener">${siteUrl}</a> 에서 확인할 수 있어요.`;
     newSiteStatusEl.className = "status success";

@@ -373,6 +373,37 @@ function starsHtml(value) {
   return `<span class="stars"><span class="stars-bg">★★★★★</span><span class="stars-fill" style="width:${pct}%">★★★★★</span></span>`;
 }
 
+// ===== MR 재생 팝업 =====
+const mrModal = document.getElementById("mr-modal");
+const mrVideoFrame = document.getElementById("mr-video-frame");
+
+function getYoutubeEmbedUrl(url) {
+  const match = url.match(
+    /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/
+  );
+  return match ? `https://www.youtube.com/embed/${match[1]}?autoplay=1` : null;
+}
+
+function openMrVideo(url) {
+  const embedUrl = getYoutubeEmbedUrl(url);
+  if (embedUrl) {
+    mrVideoFrame.src = embedUrl;
+    mrModal.hidden = false;
+  } else {
+    window.open(url, "_blank", "noopener");
+  }
+}
+
+function closeMrVideo() {
+  mrModal.hidden = true;
+  mrVideoFrame.src = "";
+}
+
+document.getElementById("mr-close-btn").addEventListener("click", closeMrVideo);
+mrModal.addEventListener("click", (e) => {
+  if (e.target === mrModal) closeMrVideo();
+});
+
 async function quickDeleteSong(song) {
   if (!(await confirmDialog(`"${song.title}" (${song.artist})을(를) 삭제할까요?`))) return;
   try {
@@ -418,6 +449,7 @@ function renderView(items) {
     const metaRowHtml = `
       <div class="song-meta-row">
         ${song.difficulty ? starsHtml(song.difficulty) : ""}
+        ${song.mr ? `<button class="icon-btn mr-play-btn" title="MR 재생">▶️</button>` : ""}
         <button class="icon-btn danger song-delete" title="삭제">🗑️</button>
       </div>
     `;
@@ -475,6 +507,13 @@ function renderView(items) {
       e.stopPropagation();
       quickDeleteSong(song);
     });
+    const mrPlayBtn = li.querySelector(".mr-play-btn");
+    if (mrPlayBtn) {
+      mrPlayBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openMrVideo(song.mr);
+      });
+    }
     li.addEventListener("click", () => openEditModal(song));
     listEl.appendChild(li);
   }
@@ -642,6 +681,7 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && !quickAddModal.hidden) closeQuickAddModal();
   if (e.key === "Escape" && !confirmModal.hidden) confirmCancelBtn.click();
   if (e.key === "Escape" && !adminToolsEl.hidden) adminToolsEl.hidden = true;
+  if (e.key === "Escape" && !mrModal.hidden) closeMrVideo();
 });
 
 document.getElementById("qa-submit-btn").addEventListener("click", async () => {

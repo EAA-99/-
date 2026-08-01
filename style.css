@@ -699,27 +699,6 @@ button.danger {
   overflow-y: auto;
 }
 
-.mr-modal-card {
-  max-width: 640px;
-}
-
-.mr-video-wrap {
-  position: relative;
-  width: 100%;
-  padding-top: 56.25%;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #000;
-}
-
-.mr-video-wrap iframe {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
 .mr-play-btn {
   font-size: 0.95rem;
 }
